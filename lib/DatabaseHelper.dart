@@ -6,14 +6,14 @@ import 'package:path_provider/path_provider.dart';
 
 class DatabaseHelper {
 
-  static final _databaseName = "MyDatabase.db";
+  static final _databaseName = "PostsDatabase.db";
   static final _databaseVersion = 1;
 
-  static final table = 'my_table';
+  static final table = 'posts_table';
 
-  static final columnId = '_id';
-  static final columnName = 'name';
-  static final columnAge = 'age';
+  static final postId = '_id';
+  static final postTitle = 'title';
+  static final postBody = 'body';
 
   // make this a singleton class
   DatabaseHelper._privateConstructor();
@@ -32,6 +32,10 @@ class DatabaseHelper {
   _initDatabase() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, _databaseName);
+    File dbfile = File(path);
+    if (await dbfile.exists()) {
+
+    }
     return await openDatabase(path,
         version: _databaseVersion,
         onCreate: _onCreate);
@@ -39,11 +43,12 @@ class DatabaseHelper {
 
   // SQL code to create the database table
   Future _onCreate(Database db, int version) async {
+
     await db.execute('''
           CREATE TABLE $table (
-            $columnId INTEGER PRIMARY KEY,
-            $columnName TEXT NOT NULL,
-            $columnAge INTEGER NOT NULL
+            $postId INTEGER PRIMARY KEY,
+            $postTitle TEXT NOT NULL,
+            $postBody TEXT NOT NULL
           )
           ''');
   }
@@ -76,14 +81,14 @@ class DatabaseHelper {
   // column values will be used to update the row.
   Future<int> update(Map<String, dynamic> row) async {
     Database db = await instance.database;
-    int id = row[columnId];
-    return await db.update(table, row, where: '$columnId = ?', whereArgs: [id]);
+    int id = row[postId];
+    return await db.update(table, row, where: '$postId = ?', whereArgs: [id]);
   }
 
   // Deletes the row specified by the id. The number of affected rows is
   // returned. This should be 1 as long as the row exists.
   Future<int> delete(int id) async {
     Database db = await instance.database;
-    return await db.delete(table, where: '$columnId = ?', whereArgs: [id]);
+    return await db.delete(table, where: '$postId = ?', whereArgs: [id]);
   }
 }

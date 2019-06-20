@@ -2,13 +2,25 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
-import 'package:sqflite/sqflite.dart';
+import 'package:boots/DatabaseHelper.dart';
+import 'package:boots/PageRequest.dart';
+import 'package:boots/WidgetAdapter.dart';
 
+final dbHelper = DatabaseHelper.instance;
 
-void main(){
+void main() async {
+  Map<String, dynamic> row = {
+    DatabaseHelper.postTitle : 'Boots app is releasing!',
+    DatabaseHelper.postBody  : 'We are releasing Boots App, a new GPS/social media app for Nigerians during '
+        'their required paramilitary year that will help people find companions, make friends, and stay safe.'
+  };
+  for (var i = 0; i < 100; i++) {
+    await dbHelper.insert(row);
+  }
 
   runApp(new BootsApp());
 }
+
 
 class BootsApp extends StatelessWidget {
   @override
@@ -26,6 +38,9 @@ class MainPage extends StatefulWidget {
     return new _MainPageState();
   }
 }
+
+typedef Future<List<Map<String, dynamic>>> PageRequest (int page, int pageSize);
+typedef Widget WidgetAdapter (Map<String, dynamic> t);
 
 class _MainPageState extends State<MainPage> {
 
@@ -45,9 +60,9 @@ class _MainPageState extends State<MainPage> {
     return new Scaffold(
         body: new PageView(
             children: [
-              new Container(color: Colors.red),
-              new Container(color: Colors.blue),
-              new Container(color: Colors.grey)
+              new LoadingListView(),
+              new LoadingListView(),
+              new LoadingListView(),
             ],
 
             /// Specify the page controller
@@ -107,20 +122,11 @@ class _MainPageState extends State<MainPage> {
   }
 }
 
-typedef Future<List<T>> PageRequest<T> (Database database, int page, int pageSize);
-typedef Widget WidgetAdapter<T>(T t);
 
-class LoadingListView<T> extends StatefulWidget {
 
-  /// Abstraction for loading the data.
-  /// This can be anything: An API-Call,
-  /// loading data from a certain file or database,
-  /// etc. It will deliver a list of objects (of type T)
-  final PageRequest<T> pageRequest;
 
-  /// Used for building Widgets out of
-  /// the fetched data
-  final WidgetAdapter<T> widgetAdapter;
+class LoadingListView extends StatefulWidget {
+  
 
   /// The number of elements requested for each page
   final int pageSize;
@@ -132,20 +138,9 @@ class LoadingListView<T> extends StatefulWidget {
   /// [PageView.reverse]
   final bool reverse;
 
-  @override
-  Widget build(BuildContext context) {
-
-    return new MaterialApp(
-      title: 'Lime',
-      home: new MainPage(),
-    );
-  }
-
-
-  LoadingListView(this.pageRequest, {
+  LoadingListView( {
     this.pageSize: 50,
     this.pageThreshold:10,
-    @required this.widgetAdapter,
     this.reverse: false,
   });
 
@@ -156,20 +151,23 @@ class LoadingListView<T> extends StatefulWidget {
 }
 
 
-class _LoadingListViewState<T> extends State<LoadingListView<T>> {
+class _LoadingListViewState extends State<LoadingListView> {
 
   /// Contains all fetched elements ready to display!
-  List<T> objects = [];
+  List<Map<String, dynamic>> objects = [];
   /// A Future returned by loadNext() if there
   /// is currently a request running
   /// or null, if no request is performed.
   Future request;
 
-  // reference to our single class that manages the database
+  @override
+  initState() {
+    super.initState();
+    this.lockedLoadNext();
+  }
 
   @override
   Widget build(BuildContext context) {
-
     ListView listView = new ListView.builder(
         itemBuilder: itemBuilder,
         itemCount: objects.length,
@@ -182,23 +180,20 @@ class _LoadingListViewState<T> extends State<LoadingListView<T>> {
 
   }
   Future onRefresh() async {
+    print('refresh');
     this.request?.timeout(const Duration());
-    List<T> fetched = await widget.pageRequest(database, 0, widget.pageSize);
+    List<Map<String, dynamic>> fetched = await pageRequest(0, widget.pageSize);
     setState(() {
       this.objects = fetched;
+      print(this.objects.length);
     });
 
     return true;
   }
 
-  @override
-  void initState() {
-    super.initState();
-    this.lockedLoadNext();
-  }
   Future loadNext() async {
     int page = (objects.length / widget.pageSize).floor();
-    List<T> fetched = await widget.pageRequest(database, page, widget.pageSize);
+    List<Map<String, dynamic>> fetched = await pageRequest(page, widget.pageSize);
 
     if(mounted) {
       this.setState(() {
@@ -206,7 +201,9 @@ class _LoadingListViewState<T> extends State<LoadingListView<T>> {
       });
     }
   }
+
   void lockedLoadNext() {
+    print('locked load next');
     if (this.request == null) {
       this.request = loadNext().then((x) {
         this.request = null;
@@ -223,7 +220,7 @@ class _LoadingListViewState<T> extends State<LoadingListView<T>> {
       lockedLoadNext();
     }
 
-    return widget.widgetAdapter != null ? widget.widgetAdapter(objects[index])
+    return widgetAdapter != null ? widgetAdapter(objects[index])
         : new Container();
   }
 }
