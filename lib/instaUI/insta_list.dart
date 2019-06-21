@@ -1,19 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
-import 'package:flutter_insta_clone/insta_stories.dart';
+
+
+final Widget emptyWidget = new Container(width: 0, height: 0);
 
 class InstaList extends StatelessWidget {
+  String postBody;
+  Image postPicture;
+
+  InstaList({String postBody, Image postPicture} ) {
+    this.postBody = postBody;
+    this.postPicture = postPicture;
+  }
   @override
   Widget build(BuildContext context) {
-    var deviceSize = MediaQuery.of(context).size;
-    return ListView.builder(
-      itemCount: 5,
-      itemBuilder: (context, index) => index == 0
-          ? new SizedBox(
-        child: new InstaStories(),
-        height: deviceSize.height * 0.15,
-      )
-          : Column(
+    return Column(
         mainAxisAlignment: MainAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -52,12 +53,13 @@ class InstaList extends StatelessWidget {
               ],
             ),
           ),
-          Flexible(
+          Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Text(postBody)
+          ),
+          this.postPicture == null ? emptyWidget: Flexible(
             fit: FlexFit.loose,
-            child: new Image.network(
-              "https://images.pexels.com/photos/672657/pexels-photo-672657.jpeg?auto=compress&cs=tinysrgb&dpr=2&h=750&w=1260",
-              fit: BoxFit.cover,
-            ),
+            child: this.postPicture,
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),
@@ -68,21 +70,21 @@ class InstaList extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: <Widget>[
                     new Icon(
-                      FontAwesomeIcons.heartO,
+                      FontAwesomeIcons.heart,
                     ),
                     new SizedBox(
                       width: 16.0,
                     ),
                     new Icon(
-                      FontAwesomeIcons.commentO,
+                      FontAwesomeIcons.comment,
                     ),
                     new SizedBox(
                       width: 16.0,
                     ),
-                    new Icon(FontAwesomeIcons.paperPlaneO),
+                    new Icon(FontAwesomeIcons.paperPlane),
                   ],
                 ),
-                new Icon(FontAwesomeIcons.bookmarkO)
+                new Icon(FontAwesomeIcons.bookmark)
               ],
             ),
           ),
@@ -129,7 +131,7 @@ class InstaList extends StatelessWidget {
             Text("1 Day Ago", style: TextStyle(color: Colors.grey)),
           )
         ],
-      ),
     );
   }
 }
+

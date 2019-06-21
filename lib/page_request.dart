@@ -1,14 +1,14 @@
 import 'dart:async';
+import 'dart:math';
 
-import 'package:path/path.dart';
-import 'package:sqflite/sqflite.dart';
-import 'package:boots/DatabaseHelper.dart';
+import 'package:boots/database_helper.dart';
+
 
 final dbHelper = DatabaseHelper.instance;
 
 Future<List<Map<String, dynamic>>> pageRequest (int page, int pageSize) async {
-  var rows = await dbHelper.queryAllRows();
-  return rows.sublist(0, pageSize);
+  List<Map<String, dynamic>> rows = await dbHelper.queryAllRows();
+  return rows.sublist(0, min(pageSize, rows.length));
 }
 
 
