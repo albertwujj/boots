@@ -1,18 +1,23 @@
 import 'dart:async';
+import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:boots/database_helper.dart';
-import 'package:boots/read_feed.dart';
-import 'package:boots/instaUI/create_post.dart';
+import 'package:boots/loading_list.dart';
+import 'package:boots/posts/create_post.dart';
+import 'package:boots/friends/friends_list.dart';
+
+final Widget emptyWidget = new Container(width: 0, height: 0);
 
 final dbHelper = DatabaseHelper.instance;
 
+Future<List<Map<String, dynamic>>> pageRequest (DatabaseTable table, int page, int pageSize) async {
+  List<Map<String, dynamic>> rows = await dbHelper.queryAllRows(table);
+  return rows.sublist(0, min(pageSize, rows.length));
+}
+
 void main() async {
-  Map<String, dynamic> row = {
-    DatabaseHelper.postBody  : 'We are releasing Boots App, a new GPS/social media app for Nigerians during '
-        'their required paramilitary year that will help people find companions, make friends, and stay safe.'
-  };
 
   runApp(new BootsApp());
 }
@@ -35,8 +40,6 @@ class MainPage extends StatefulWidget {
   }
 }
 
-typedef Future<List<Map<String, dynamic>>> PageRequest (int page, int pageSize);
-typedef Widget WidgetAdapter (Map<String, dynamic> t);
 
 class _MainPageState extends State<MainPage> {
 
@@ -51,14 +54,18 @@ class _MainPageState extends State<MainPage> {
     });
   }
 
+  void changePage(int page) {
+    this._pageController.jumpToPage(page);
+  }
+
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
         body: new PageView(
             children: [
-              new LoadingListView(),
-              new CreatePost(),
-              new LoadingListView(),
+              new LoadingListView(table: DatabaseTable.posts),
+              new CreatePost(changePage: changePage),
+              new FriendsScaffold(),
             ],
 
             /// Specify the page controller
@@ -86,7 +93,6 @@ class _MainPageState extends State<MainPage> {
           onTap: navigationTapped,
           currentIndex: _page,
         )
-
     );
 
   }

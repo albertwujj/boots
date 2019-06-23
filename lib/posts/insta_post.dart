@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
+import 'package:boots/main.dart';
 
-final Widget emptyWidget = new Container(width: 0, height: 0);
 
-class InstaList extends StatelessWidget {
+class InstaPost extends StatelessWidget {
   String postBody;
   Image postPicture;
 
-  InstaList({String postBody, Image postPicture} ) {
+  InstaPost({String postBody, Image postPicture} ) {
     this.postBody = postBody;
     this.postPicture = postPicture;
   }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -128,7 +129,7 @@ class InstaList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child:
-            Text("1 Day Ago", style: TextStyle(color: Colors.grey)),
+              Text("1 Day Ago", style: TextStyle(color: Colors.grey)),
           )
         ],
     );
