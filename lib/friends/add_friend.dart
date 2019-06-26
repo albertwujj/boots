@@ -5,12 +5,11 @@ import 'package:flutter/services.dart';
 
 import 'package:boots/database_helper.dart';
 import 'package:boots/upload_image.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 
-DatabaseHelper dbhelper = DatabaseHelper.instance;
+//Database
 
-
+//UI
 class AddFriend extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -21,6 +20,7 @@ class AddFriend extends StatefulWidget {
 class _AddFriendState extends State<AddFriend> {
   BuildContext context;
   TextEditingController textController = TextEditingController();
+  File picture;
 
   @override
   Widget build(BuildContext context) {
@@ -80,7 +80,8 @@ class _AddFriendState extends State<AddFriend> {
     Map<String, dynamic> friend_entry = new Map<String, dynamic>();
     friend_entry[DatabaseHelper.postBody] = name;
     friend_entry[DatabaseHelper.postPicture] = picture_bytes;
-    dbhelper.insert(DatabaseTable.friends, friend_entry);
+    DatabaseHelper.insert(DatabaseTable.friends, friend_entry);
+    print('friend added');
     Navigator.pop(this.context);
   }
 }

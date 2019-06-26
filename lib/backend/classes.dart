@@ -1,11 +1,14 @@
 
 class User {
   static final id = "id";
-  static final name = "name";
-  static final isActive = "isActive";
+  static final handle = "handle";
+  static final googleId = "googleId";
   static final groupList = "groupList";
   static final postsList = "postsList";
+
+  /// TODO
   static final bioRef = "bioRef";
+  static final isActive = "isActive";
 }
 
 class Group {

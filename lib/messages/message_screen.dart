@@ -176,10 +176,10 @@ class ChatScreenState extends State<ChatScreen> {
     });
 
     if (this.imageFile != null) {
-      performSendMessage(messageText: "", imageFile: this.imageFile);
+      performSendMessage(groupId: this.groupId, messageText: "", imageFile: this.imageFile);
     }
     if (text != null && text != "") {
-      performSendMessage(messageText: text, imageFile: null);
+      performSendMessage(groupId: this.groupId, messageText: text, imageFile: null);
     }
     this.imageFile = null;
   }

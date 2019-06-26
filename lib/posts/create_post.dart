@@ -8,8 +8,6 @@ import 'package:boots/database_helper.dart';
 import 'package:boots/upload_image.dart';
 
 
-DatabaseHelper dbhelper = DatabaseHelper.instance;
-
 class CreatePost extends StatefulWidget {
   var changePage;
   CreatePost({this.changePage});
@@ -24,6 +22,7 @@ class _CreatePostState extends State<CreatePost> {
   BuildContext context;
   final textController = TextEditingController();
   var changePage;
+  File picture;
 
   _CreatePostState({this.changePage});
 
@@ -81,7 +80,7 @@ class _CreatePostState extends State<CreatePost> {
     Map<String, dynamic> post_entry = new Map<String, dynamic>();
     post_entry[DatabaseHelper.postBody] = body;
     post_entry[DatabaseHelper.postPicture] = picture_bytes;
-    dbhelper.insert(DatabaseTable.posts, post_entry);
+    DatabaseHelper.insert(DatabaseTable.posts, post_entry);
     this.changePage(0);
   }
 

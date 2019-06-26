@@ -7,8 +7,6 @@ import 'package:image_picker/image_picker.dart';
 import 'package:boots/database_helper.dart';
 
 
-DatabaseHelper dbhelper = DatabaseHelper.instance;
-
 void openCamera(BuildContext context) async{
   DatabaseHelper.currPicture = await ImagePicker.pickImage(
     source: ImageSource.camera,

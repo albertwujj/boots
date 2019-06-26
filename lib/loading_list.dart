@@ -2,6 +2,8 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:boots/posts/insta_post.dart';
 import 'package:boots/database_helper.dart';
 import 'package:boots/main.dart';
@@ -96,8 +98,8 @@ class _LoadingListViewState extends State<LoadingListView> {
       lockedLoadNext();
     }
 
-
-    return this.widgetAdapter(this.objects[index]);
+    return widgetAdapter != null ? widgetAdapter(objects[index])
+        : new Container();
   }
 
   @override
@@ -114,12 +116,10 @@ class _LoadingListViewState extends State<LoadingListView> {
 
   }
   Future onRefresh() async {
-    print('refresh');
     this.request?.timeout(const Duration());
     List<Map<String, dynamic>> fetched = await pageRequest(this.table, 0, widget.pageSize);
     setState(() {
       this.objects = fetched;
-      print(this.objects.length);
     });
 
     return true;

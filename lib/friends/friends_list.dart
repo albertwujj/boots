@@ -8,9 +8,6 @@ import 'package:boots/database_helper.dart';
 import 'package:boots/friends/add_friend.dart';
 
 
-
-final dbHelper = DatabaseHelper.instance;
-
 class FriendsScaffold extends StatelessWidget {
 
   @override
@@ -40,7 +37,6 @@ class FriendsScaffold extends StatelessWidget {
               child: Icon(Icons.add_circle, size: 50,),
               )
             ),
-            Divider()
           ]
           )
         )

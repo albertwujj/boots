@@ -4,20 +4,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:boots/database_helper.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:boots/loading_list.dart';
 import 'package:boots/posts/create_post.dart';
 import 'package:boots/friends/friends_list.dart';
 
+
 final Widget emptyWidget = new Container(width: 0, height: 0);
 
-final dbHelper = DatabaseHelper.instance;
-
 Future<List<Map<String, dynamic>>> pageRequest (DatabaseTable table, int page, int pageSize) async {
-  List<Map<String, dynamic>> rows = await dbHelper.queryAllRows(table);
+  List<Map<String, dynamic>> rows = await DatabaseHelper.queryAllRows(table);
   return rows.sublist(0, min(pageSize, rows.length));
 }
 
+
 void main() async {
+
+  CollectionReference messages = Firestore.instance.collection('rooms').document('roomA').collection('messages');
+  messages.add({DatabaseHelper.postBody: 'fuck. yes.'});
+
+  QuerySnapshot quer = await messages.getDocuments();
+  List<DocumentSnapshot> doc = quer.documents;
+  print(doc.take(1).single.data[DatabaseHelper.postBody]);
 
   runApp(new BootsApp());
 }
