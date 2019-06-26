@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
-import 'package:firebase_database/firebase_database.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 var currentUserEmail;
 
 class ChatMessageListItem extends StatelessWidget {
-  final DataSnapshot messageSnapshot;
+  final DocumentSnapshot messageSnapshot;
   final Animation animation;
 
   ChatMessageListItem({this.messageSnapshot, this.animation});
@@ -20,7 +20,7 @@ class ChatMessageListItem extends StatelessWidget {
       child: new Container(
         margin: const EdgeInsets.symmetric(vertical: 10.0),
         child: new Row(
-          children: currentUserEmail == messageSnapshot.value['email']
+          children: currentUserEmail == messageSnapshot.data['email']
               ? getSentMessageLayout()
               : getReceivedMessageLayout(),
         ),
@@ -34,19 +34,19 @@ class ChatMessageListItem extends StatelessWidget {
         child: new Column(
           crossAxisAlignment: CrossAxisAlignment.end,
           children: <Widget>[
-            new Text(messageSnapshot.value['senderName'],
+            new Text(messageSnapshot.data['senderName'],
                 style: new TextStyle(
                     fontSize: 14.0,
                     color: Colors.black,
                     fontWeight: FontWeight.bold)),
             new Container(
               margin: const EdgeInsets.only(top: 5.0),
-              child: messageSnapshot.value['imageUrl'] != null
+              child: messageSnapshot.data['imageUrl'] != null
                   ? new Image.network(
-                messageSnapshot.value['imageUrl'],
+                messageSnapshot.data['imageUrl'],
                 width: 250.0,
               )
-                  : new Text(messageSnapshot.value['text']),
+                  : new Text(messageSnapshot.data['text']),
             ),
           ],
         ),
@@ -58,7 +58,7 @@ class ChatMessageListItem extends StatelessWidget {
               margin: const EdgeInsets.only(left: 8.0),
               child: new CircleAvatar(
                 backgroundImage:
-                new NetworkImage(messageSnapshot.value['senderPhotoUrl']),
+                new NetworkImage(messageSnapshot.data['senderPhotoUrl']),
               )),
         ],
       ),
@@ -74,7 +74,7 @@ class ChatMessageListItem extends StatelessWidget {
               margin: const EdgeInsets.only(right: 8.0),
               child: new CircleAvatar(
                 backgroundImage:
-                new NetworkImage(messageSnapshot.value['senderPhotoUrl']),
+                new NetworkImage(messageSnapshot.data['senderPhotoUrl']),
               )),
         ],
       ),
@@ -82,19 +82,19 @@ class ChatMessageListItem extends StatelessWidget {
         child: new Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            new Text(messageSnapshot.value['senderName'],
+            new Text(messageSnapshot.data['senderName'],
                 style: new TextStyle(
                     fontSize: 14.0,
                     color: Colors.black,
                     fontWeight: FontWeight.bold)),
             new Container(
               margin: const EdgeInsets.only(top: 5.0),
-              child: messageSnapshot.value['imageUrl'] != null
+              child: messageSnapshot.data['imageUrl'] != null
                   ? new Image.network(
-                messageSnapshot.value['imageUrl'],
+                messageSnapshot.data['imageUrl'],
                 width: 250.0,
               )
-                  : new Text(messageSnapshot.value['text']),
+                  : new Text(messageSnapshot.data['text']),
             ),
           ],
         ),
