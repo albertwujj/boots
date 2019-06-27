@@ -5,7 +5,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:boots/loading_list.dart';
 import 'package:boots/database_helper.dart';
-import 'package:boots/friends/add_friend.dart';
+import 'package:boots/friends/search_handle.dart';
 
 
 class FriendsScaffold extends StatelessWidget {
@@ -29,9 +29,9 @@ class FriendsScaffold extends StatelessWidget {
               padding: EdgeInsets.all(8.0),
               splashColor: Colors.blueAccent,
               onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (context) => AddFriend()),
+                showSearch(
+                  context: context,
+                  delegate: CustomSearchDelegate(),
                 );
               },
               child: Icon(Icons.add_circle, size: 50,),

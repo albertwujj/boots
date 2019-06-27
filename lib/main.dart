@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 
 import 'package:boots/database_helper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'package:boots/loading_list.dart';
 import 'package:boots/posts/create_post.dart';
@@ -31,13 +32,19 @@ void main() async {
   runApp(new BootsApp());
 }
 
+class MainBloc extends StatesRebuilder {
+}
+
 
 class BootsApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
       title: 'Lime',
-      home: new MainPage(),
+      home: BlocProvider(
+        bloc: MainBloc(),
+        child: MainPage(),
+      )
     );
   }
 }
