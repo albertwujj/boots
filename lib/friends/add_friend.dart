@@ -3,8 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firestore_ui/firestore_ui.dart';
+
+import 'package:boots/account/signedin.dart';
 import 'package:boots/database_helper.dart';
 import 'package:boots/upload_image.dart';
+import 'package:boots/backend/classes.dart';
 
 
 //Database
@@ -77,9 +82,18 @@ class _AddFriendState extends State<AddFriend> {
     print(DatabaseHelper.currPicture);
     picture_bytes = picture == null ? null: await picture.readAsBytes();
 
+    Map<String, dynamic> group = {
+      Group.userList: <String>[signedInUserId, ]
+    };
+
+    groups = Firestore.instance.collection("groups").add()
+
     Map<String, dynamic> friend_entry = new Map<String, dynamic>();
-    friend_entry[DatabaseHelper.postBody] = name;
-    friend_entry[DatabaseHelper.postPicture] = picture_bytes;
+    friend_entry[FriendEntry.friendName] = name;
+    friend_entry[FriendEntry.friendPicture] = picture_bytes;
+
+
+    friend_entry[FriendEntry.groupId] = ;
     DatabaseHelper.insert(DatabaseTable.friends, friend_entry);
     print('friend added');
     Navigator.pop(this.context);

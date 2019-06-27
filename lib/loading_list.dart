@@ -10,30 +10,6 @@ import 'package:boots/main.dart';
 import 'package:boots/friends/friend_entry.dart';
 
 
-Widget postsWidgetAdapter (Map<String, dynamic> t) {
-  var picture_bytes = t[DatabaseHelper.postPicture];
-  Image picture = picture_bytes == null ? null: Image.memory(picture_bytes);
-
-  Widget ret = InstaPost(
-    postBody: t[DatabaseHelper.postBody],
-    postPicture: picture,
-  );
-  return ret;
-}
-
-
-Widget friendsWidgetAdapter (Map<String, dynamic> t) {
-  var picture_bytes = t[DatabaseHelper.postPicture];
-
-  Widget ret = FriendRow(
-    friendName: t[DatabaseHelper.friendName],
-    friendPicture: picture_bytes,
-  );
-
-  return ret;
-}
-
-
 class LoadingListView extends StatefulWidget {
 
   DatabaseTable table;

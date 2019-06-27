@@ -9,7 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firestore_ui/firestore_ui.dart';
 import 'package:firestore_ui/animated_firestore_list.dart';
 
-import 'package:boots/messaging/message_item.dart';
+import 'package:boots/messages/message_item.dart';
 import 'package:boots/backend/messaging.dart';
 import 'package:boots/backend/auth.dart';
 
@@ -30,7 +30,7 @@ class ChatScreen extends StatefulWidget {
 class ChatScreenState extends State<ChatScreen> {
   String groupId;
   ChatScreenState({
-    this.groupId;
+    this.groupId,
   });
 
   final TextEditingController _textEditingController =
@@ -40,7 +40,6 @@ class ChatScreenState extends State<ChatScreen> {
   bool get _isComposingMessage {
     return (this.imageFile != null || _isComposingText);
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -90,7 +89,7 @@ class ChatScreenState extends State<ChatScreen> {
 
   Widget messagesDisplay() {
     return FirestoreAnimatedList(
-      query: messagesList(),
+      query: messagesList(groupId: this.groupId),
       padding: const EdgeInsets.all(8.0),
       reverse: false,
       //comparing timestamp of messages to check which one would appear first

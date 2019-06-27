@@ -2,18 +2,31 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
-import 'package:boots/main.dart';
-import 'package:boots/messaging/message_screen.dart';
+import 'package:boots/messages/message_screen.dart';
+import 'package:boots/database_helper.dart';
+import 'package:boots/backend/classes.dart';
 
+
+Widget friendsWidgetAdapter (Map<String, dynamic> t) {
+  var picture_bytes = t[FriendEntry.friendPicture];
+
+  Widget ret = FriendRow(
+    friendName: t[FriendEntry.friendName],
+    friendPictureBytes: picture_bytes,
+    groupId: t[FriendEntry.groupId];
+  );
+
+  return ret;
+}
 
 class FriendRow extends StatelessWidget {
   String friendName;
-  List<int> friendPicture;
+  List<int> friendPictureBytes;
   String groupId;
 
-  FriendRow({String friendName, List<int> friendPicture, String groupId} ) {
+  FriendRow({String friendName, List<int> friendPictureBytes, String groupId} ) {
     this.friendName = friendName;
-    this.friendPicture = friendPicture;
+    this.friendPictureBytes = friendPictureBytes;
     this.groupId = groupId;
   }
 
@@ -31,13 +44,13 @@ class FriendRow extends StatelessWidget {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.start,
             children: <Widget>[
-              this.friendPicture == null ? new SizedBox(width: 100.0, height: 100.0) : new Container(
+              this.friendPictureBytes == null ? new SizedBox(width: 100.0, height: 100.0) : new Container(
                   width: 100.0,
                   height: 100.0,
                   decoration: new BoxDecoration(
                       shape: BoxShape.circle,
                       image: new DecorationImage(
-                          image: MemoryImage(this.friendPicture),
+                          image: MemoryImage(this.friendPictureBytes),
                           fit: BoxFit.fill,
                       )
                   )),

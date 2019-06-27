@@ -2,7 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:boots/main.dart';
+import 'package:boots/database_helper.dart';
 
+
+Widget postsWidgetAdapter (Map<String, dynamic> t) {
+  var picture_bytes = t[DatabaseHelper.postPicture];
+  Image picture = picture_bytes == null ? null: Image.memory(picture_bytes);
+
+  Widget ret = InstaPost(
+    postBody: t[DatabaseHelper.postBody],
+    postPicture: picture,
+  );
+  return ret;
+}
 
 class InstaPost extends StatelessWidget {
   String postBody;

@@ -13,18 +13,17 @@ var currentUserEmail;
 
 
 void performSendMessage({String groupId, String messageText, File imageFile}) async {
-  messages_collection = Firestore.instance.collection("groups").
   await ensureLoggedIn();
+  CollectionReference messages_collection = Firestore.instance.collection("groups").document(groupId).collection("messages");
   if (imageFile == null) {
-    sendMessage( messageText: messageText, imageUrl: null);
+    sendMessage(messages_collection: messages_collection, messageText: messageText, imageUrl: null);
   } else {
     String imageUrl = await uploadImage(imageFile);
-    sendMessage( messageText: messageText, imageUrl: imageUrl);
+    sendMessage(messages_collection: messages_collection, messageText: messageText, imageUrl: imageUrl);
   }
 }
 
 void sendMessage({CollectionReference messages_collection, String messageText, String imageUrl}) {
-
   messages_collection.add({
     'text': messageText,
     'email': googleSignIn.currentUser.email,
@@ -34,6 +33,11 @@ void sendMessage({CollectionReference messages_collection, String messageText, S
   });
 
   analytics.logEvent(name: 'send_message');
+}
+
+Stream<QuerySnapshot> messagesList({String groupId}) {
+  CollectionReference messages_collection = Firestore.instance.collection("groups").document(groupId).collection("messages");
+  return messages_collection.snapshots();
 }
 
 Future<String> uploadImage(File imageFile) async {
@@ -48,8 +52,4 @@ Future<String> uploadImage(File imageFile) async {
   StorageTaskSnapshot initialRef = await uploadTask.onComplete;
   String downloadUrl = await initialRef.ref.getDownloadURL();
   return downloadUrl;
-}
-
-Stream<QuerySnapshot> messagesList() {
-  return messages_collection.snapshots();
 }

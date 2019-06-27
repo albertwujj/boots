@@ -21,3 +21,8 @@ class Group {
 
 }
 
+class FriendEntry {
+  static final friendName = "friendName";
+  static final friendPicture = "friendPicture";
+  static final groupId = "groupId";
+}
