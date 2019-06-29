@@ -12,3 +12,10 @@ void createUser(String name) {
   Firestore.instance.collection("Users").add(entry);
 }
 
+
+Future<List<DocumentSnapshot>> findUserSnaps(List<String> handles) async {
+  CollectionReference users = Firestore.instance.collection("Users");
+  List<DocumentSnapshot> docs = (await users.where(User.handle, isEqualTo: handles).getDocuments()).documents;
+  List<DocumentSnapshot> matching = docs.where((DocumentSnapshot doc) => handles.contains(doc.data[User.handle]));
+  return matching;
+}

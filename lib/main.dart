@@ -3,24 +3,23 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:boots/database_helper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 
-import 'package:boots/loading_list.dart';
+import 'package:boots/loading_list_old.dart';
 import 'package:boots/posts/create_post.dart';
 import 'package:boots/friends/friends_list.dart';
+import 'package:boots/backend/storage.dart';
 
 
 final Widget emptyWidget = new Container(width: 0, height: 0);
-
-Future<List<Map<String, dynamic>>> pageRequest (DatabaseTable table, int page, int pageSize) async {
-  List<Map<String, dynamic>> rows = await DatabaseHelper.queryAllRows(table);
-  return rows.sublist(0, min(pageSize, rows.length));
+class MainBloc extends StatesRebuilder {
 }
 
 
 void main() async {
+
 
   CollectionReference messages = Firestore.instance.collection('rooms').document('roomA').collection('messages');
   messages.add({DatabaseHelper.postBody: 'fuck. yes.'});
@@ -29,11 +28,9 @@ void main() async {
   List<DocumentSnapshot> doc = quer.documents;
   print(doc.take(1).single.data[DatabaseHelper.postBody]);
 
-  runApp(new BootsApp());
+  //runApp(new BootsApp());
 }
 
-class MainBloc extends StatesRebuilder {
-}
 
 
 class BootsApp extends StatelessWidget {

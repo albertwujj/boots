@@ -3,21 +3,35 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:image_picker/image_picker.dart';
+
 import 'package:boots/database_helper.dart';
 
 
-void openCamera(BuildContext context) async{
-  DatabaseHelper.currPicture = await ImagePicker.pickImage(
+class PictureBloc extends StatesRebuilder {
+  File picture;
+  void setPicture(File picture) {
+    this.picture = picture;
+    rebuildStates();
+  }
+}
+
+void openCamera(BuildContext context) async {
+  final PictureBloc bloc = BlocProvider.of<PictureBloc>(context);
+  File picture = await ImagePicker.pickImage(
     source: ImageSource.camera,
   );
+  bloc.setPicture(picture);
   Navigator.pop(context);
 }
 
 void openGallery(BuildContext context) async{
-  DatabaseHelper.currPicture = await ImagePicker.pickImage(
+  final PictureBloc bloc = BlocProvider.of<PictureBloc>(context);
+  File picture = await ImagePicker.pickImage(
     source: ImageSource.gallery,
   );
+  bloc.setPicture(picture);
   Navigator.pop(context);
 }
 

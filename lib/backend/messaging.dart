@@ -6,6 +6,7 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 
 import 'package:boots/backend/auth.dart';
+import 'package:boots/backend/storage.dart';
 
 
 final analytics = new FirebaseAnalytics();
@@ -38,18 +39,4 @@ void sendMessage({CollectionReference messages_collection, String messageText, S
 Stream<QuerySnapshot> messagesList({String groupId}) {
   CollectionReference messages_collection = Firestore.instance.collection("groups").document(groupId).collection("messages");
   return messages_collection.snapshots();
-}
-
-Future<String> uploadImage(File imageFile) async {
-  await ensureLoggedIn();
-  int timestamp = new DateTime.now().millisecondsSinceEpoch;
-  StorageReference storageReference = FirebaseStorage
-      .instance
-      .ref()
-      .child("img_" + timestamp.toString() + ".jpg");
-  StorageUploadTask uploadTask =
-  storageReference.putFile(imageFile);
-  StorageTaskSnapshot initialRef = await uploadTask.onComplete;
-  String downloadUrl = await initialRef.ref.getDownloadURL();
-  return downloadUrl;
 }

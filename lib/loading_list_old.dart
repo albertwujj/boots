@@ -10,22 +10,27 @@ import 'package:boots/database_helper.dart';
 import 'package:boots/main.dart';
 import 'package:boots/friends/friend_row.dart';
 
+Future<List<Map<String, dynamic>>> pageRequest (DatabaseTable table, int page, int pageSize) async {
+  List<Map<String, dynamic>> rows = await DatabaseHelper.queryAllRows(table);
+  return rows.sublist(0, min(pageSize, rows.length));
+}
+
 class LoadingListView extends StatefulWidget {
 
-  final pageRequest;
-  final widgetFromEntry;
+  DatabaseTable table;
 
   /// The number of elements requested for each page
   final int pageSize;
+
   /// The number of "left over" elements in list which
   /// will trigger loading the next page
   final int pageThreshold;
+
   /// [PageView.reverse]
   final bool reverse;
 
   LoadingListView( {
-    this.pageRequest,
-    this.widgetFromEntry,
+    this.table,
     this.pageSize: 50,
     this.pageThreshold:10,
     this.reverse: false,
@@ -33,25 +38,32 @@ class LoadingListView extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return new _LoadingListViewState(
-        pageRequest: this.pageRequest,
-        widgetFromEntry: this.widgetFromEntry,
-    );
+    return new _LoadingListViewState(table: this.table);
   }
 }
 
 class _LoadingListViewState extends State<LoadingListView> {
 
   /// Contains all fetched elements ready to display!
-  List<Map<String, dynamic>> entries = [];
+  List<Map<String, dynamic>> objects = [];
   /// A Future returned by loadNext() if there
   /// is currently a request running
   /// or null, if no request is performed.
   Future request;
-  final pageRequest;
-  final widgetFromEntry;
+  var table;
+  var widgetAdapter;
 
-  _LoadingListViewState({this.pageRequest, this.widgetFromEntry});
+  _LoadingListViewState({DatabaseTable table}) {
+    this.table = table;
+    switch (this.table) {
+      case DatabaseTable.posts:
+        this.widgetAdapter = postsWidgetAdapter;
+        break;
+      case DatabaseTable.friends:
+        this.widgetAdapter = postsWidgetAdapter;
+        break;
+    }
+  }
 
   @override
   initState() {
@@ -63,11 +75,11 @@ class _LoadingListViewState extends State<LoadingListView> {
 
     /// here we go: Once we are entering the threshold zone, the loadLockedNext()
     /// is triggered.
-    if (index + widget.pageThreshold > entries.length) {
+    if (index + widget.pageThreshold > objects.length) {
       lockedLoadNext();
     }
 
-    return widgetFromEntry != null ? widgetFromEntry(entries[index])
+    return widgetAdapter != null ? widgetAdapter(objects[index])
         : new Container();
   }
 
@@ -75,32 +87,32 @@ class _LoadingListViewState extends State<LoadingListView> {
   Widget build(BuildContext context) {
     ListView listView = new ListView.builder(
         itemBuilder: itemBuilder,
-        itemCount: entries.length,
+        itemCount: objects.length,
         reverse: widget.reverse
     );
     return new RefreshIndicator(
         onRefresh: onRefresh,
         child: listView
     );
-  }
 
+  }
   Future onRefresh() async {
     this.request?.timeout(const Duration());
-    List<Map<String, dynamic>> fetched = await this.pageRequest(page: 0, pageSize: widget.pageSize);
+    List<Map<String, dynamic>> fetched = await pageRequest(this.table, 0, widget.pageSize);
     setState(() {
-      this.entries = fetched;
+      this.objects = fetched;
     });
 
     return true;
   }
 
   Future loadNext() async {
-    int page = (entries.length / widget.pageSize).floor();
-    List<Map<String, dynamic>> fetched = await this.pageRequest(page: page, pageSize: widget.pageSize);
+    int page = (objects.length / widget.pageSize).floor();
+    List<Map<String, dynamic>> fetched = await pageRequest(this.table, page, widget.pageSize);
 
     if(mounted) {
       this.setState(() {
-        entries.addAll(fetched);
+        objects.addAll(fetched);
       });
     }
   }
