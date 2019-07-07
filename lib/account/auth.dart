@@ -8,7 +8,7 @@ import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
-import 'package:boots/account/create_boots.dart';
+import 'package:boots/signin/create_boots.dart';
 import 'package:boots/globals.dart';
 import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/users.dart';
@@ -25,45 +25,32 @@ class BootsAuth {
   final googleLoginHandler = new GoogleSignIn();
 
   DocumentReference signedInRef;
-  UserEntry signedInEntry;
+  DocumentSnapshot signedInSnap;
 
   Future<DocumentReference> getSignedInRef() async {
     while (this.signedInRef == null) {
       await attemptSignIn();
     }
-
     return this.signedInRef;
   }
+
   Future<UserEntry> getSignedInEntry() async{
     DocumentSnapshot snap = await (await getSignedInRef()).get();
     return UserEntry.fromDocSnap(snap);
   }
 
-  Future<void> bootsLogin(String uid) async {
-    print('boots login');
+  void bootsLogin(String uid) {
     this.signedInRef = Firestore.instance.collection('Users').document(uid);
-    DocumentSnapshot snap = await this.signedInRef.get();
-    if (!snap.exists) {
-      print('doc ref snap does not exist');
-      await bootsRegister(this.signedInRef);
-    } else {
-      print('doc ref snap exists');
-      print(snap.data[UserKeys.handle]);
-    }
+  }
+
+  void addUser({String name, String handle}) {
+    print("adding registering user");
+    Map<String, dynamic> entry = getNewUserEntry(name: name, handle: handle);
+    ref.setData(entry);
   }
 
   void bootsRegister(DocumentReference ref) async {
-    print('registering user');
-    Completer completer = new Completer();
-    void addUser({String name, String handle}) {
-      print("adding registering user");
-      Map<String, dynamic> entry = getNewUserEntry(name: name, handle: handle);
-      ref.setData(entry);
-      completer.complete(true);
-    }
-    print('about to navigator push');
     Navigator.push(baseBuildContext, MaterialPageRoute(builder: (context) => CreateBoots(addUser: addUser,)));
-    await completer.future;
   }
 
   Future<String> googleSignIn() async {
@@ -88,6 +75,11 @@ class BootsAuth {
     FirebaseUser user = await _firebaseAuth.signInWithCredential(credential);
     print('User signed in, user id: ${user?.uid}');
     return user?.uid;
+  }
+
+  Future<void> googleBootsSignIn() async {
+    String uid = await googleSignIn();
+    bootsLogin(uid);
   }
 
   Future<bool> attemptSignIn() async {

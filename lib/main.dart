@@ -4,17 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:states_rebuilder/states_rebuilder.dart';
-import 'package:boots/database_helper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:boots/loading_list.dart';
-import 'package:boots/posts/create_post.dart';
 import 'package:boots/posts/get_posts.dart';
 import 'package:boots/friends/friends_list.dart';
-import 'package:boots/backend/storage.dart';
 import 'package:boots/account/auth.dart';
 import 'package:boots/globals.dart';
-import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/users.dart';
 
 
@@ -35,10 +31,12 @@ class BootsApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return new MaterialApp(
       title: 'Lime',
-      home: BlocProvider(
-        bloc: MainBloc(),
-        child: NavigationBootsApp(),
-      )
+      initialRoute: '/',
+      routes: {
+        '/': (context) => BlocProvider(bloc: MainBloc(), child: NavigationBootsApp()),
+        '/login': (context) => LoginPage(),
+        '/home': (context) => HomePage(),
+      },
     );
   }
 }
@@ -83,7 +81,7 @@ class _MainPageState extends State<MainPage> {
         body: new PageView(
             children: [
               new LoadingListView(pageRequest: postsPageRequest, widgetFromEntry: postsWidgetFromEntry),
-              new CreatePost(changePage: changePage),
+              new Uploader(changePage: changePage),
               new FriendsScaffold(),
             ],
 
