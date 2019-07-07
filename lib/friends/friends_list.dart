@@ -6,46 +6,94 @@ import 'package:flutter/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
-import 'package:boots/friends/friend_row.dart';
-import 'package:boots/friends/search_handle.dart';
-import 'package:boots/account/signedin.dart';
+import 'package:boots/ui_helpers/pictures.dart';
+import 'package:boots/messages/message_screen.dart';
+import 'package:boots/friends/add_friends.dart';
 import 'package:boots/loading_list.dart';
+import 'package:boots/account/auth.dart';
 import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/users.dart';
 
 
-class FriendsListBloc extends StatesRebuilder {
-  Future<List<Map<String, dynamic>>> getFriendsEntries() async {
-    Map<String, dynamic> entry = await getSignedInEntry();
-    List<String> friendHandles = entry[User.friendsList];
-    List<DocumentSnapshot> friendsSnaps = await findUserSnaps(friendHandles);
-    friendsSnaps.sort((a, b) => a[User.handle].compareTo(b[User.handle]));
-    return friendsSnaps.map((DocumentSnapshot docsnap) => docsnap.data);
-  }
+
+Future<List<UserEntry>> loadFriendsEntries() async {
+  DocumentReference signedInRef = await BootsAuth.instance.getSignedInRef();
+  DocumentSnapshot signedInSnap = await signedInRef.get();
+  print('signedinSnap $signedInSnap');
+  UserEntry entry = UserEntry.fromDocSnap(signedInSnap);
+  List<String> friendHandles = entry.friendsList;
+  print('friendListSize ${friendHandles.length}');
+  List<DocumentSnapshot> friendsSnaps = await findUserSnaps(handles: friendHandles);
+  friendsSnaps.sort((a, b) => a[UserKeys.handle].compareTo(b[UserKeys.handle])); // sort alphabetically
+  List<UserEntry> friendEntries = friendsSnaps.map((DocumentSnapshot docsnap) => UserEntry.fromDocSnap(docsnap)).toList();
+  print('friend entries length ${friendEntries.length}');
+  return friendEntries;
 }
 
 
-class FriendsScaffold extends StatelessWidget {
 
-  final bloc = FriendsListBloc();
+class FriendsScaffold extends StatefulWidget {
+  @override
+  State<StatefulWidget> createState() {
+    // TODO: implement createState
+    return FriendsScaffoldState();
+  }
+}
 
+class FriendsScaffoldState extends State<FriendsScaffold> {
+
+  List<UserEntry> _friendEntries;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    loadFriendsEntries().then((friendEntries){
+      setState(() {
+      _friendEntries = friendEntries;
+      });
+    });
+
+  }
   @override
   Widget build(BuildContext context) {
 
-    Widget widgetFromEntry(Map<String, dynamic> entry) {
-      return FriendRow(
-          friendName: entry[User.name],
-          friendPictureUrl: entry[User.pictureUrl],
-          groupId: entry[FriendEntry.groupId],
-        );
+    Widget widgetFromEntry({UserEntry friendEntry}) {
+      String friendName = friendEntry.name;
+      String friendHandle = friendEntry.handle;
+      String friendPictureUrl = friendEntry.pictureUrl;
+
+      return GestureDetector(
+        onTap: () async {
+          CollectionReference messages = (await findDMGroup(friendHandle: friendHandle)).collection(GroupKeys.messages);
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => ChatScreen(messagesCollection: messages, groupName: friendName)),
+          );
+        },
+        child: ListTile(
+          leading: Container(
+            child: circleProfile(pictureUrl: friendPictureUrl),
+            width: 75,
+            height: 75,
+          ),
+          title: Text(friendName),
+          subtitle: Text(friendHandle),
+        ),
+      );
     }
 
     return Stack(children: <Widget>[
       Align(alignment: Alignment.center,
-          child: LoadingListView(
-            pageRequest: this.bloc.getFriendsEntries,
-            widgetFromEntry: widgetFromEntry,
-          ),
+        child: ListView.builder(
+          itemBuilder: (_, i) {
+            UserEntry friendEntry = this._friendEntries[i];
+            return widgetFromEntry(friendEntry: friendEntry);
+          },
+
+          itemCount: this._friendEntries?.length ?? 0,
+        )
       ),
       Padding(padding: EdgeInsets.only(top:10.0, right:3.0),
         child: Column(
@@ -62,7 +110,7 @@ class FriendsScaffold extends StatelessWidget {
               onPressed: () {
                 showSearch(
                   context: context,
-                  delegate: CustomSearchDelegate(),
+                  delegate: FriendsSearchDelegate(),
                 );
               },
               child: Icon(Icons.add_circle, size: 50,),
@@ -73,5 +121,6 @@ class FriendsScaffold extends StatelessWidget {
         )
       ]
     );
+
   }
 }

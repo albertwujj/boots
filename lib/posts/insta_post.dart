@@ -3,26 +3,16 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:boots/main.dart';
 import 'package:boots/database_helper.dart';
+import 'package:boots/ui_helpers/pictures.dart';
 
-
-Widget postsWidgetAdapter (Map<String, dynamic> t) {
-  var picture_bytes = t[DatabaseHelper.postPicture];
-  Image picture = picture_bytes == null ? null: Image.memory(picture_bytes);
-
-  Widget ret = InstaPost(
-    postBody: t[DatabaseHelper.postBody],
-    postPicture: picture,
-  );
-  return ret;
-}
 
 class InstaPost extends StatelessWidget {
   String postBody;
-  Image postPicture;
+  String postPictureUrl;
 
-  InstaPost({String postBody, Image postPicture} ) {
+  InstaPost({String postBody, String postPictureUrl} ) {
     this.postBody = postBody;
-    this.postPicture = postPicture;
+    this.postPictureUrl = postPictureUrl;
   }
 
   @override
@@ -70,9 +60,9 @@ class InstaPost extends StatelessWidget {
               padding: const EdgeInsets.all(16.0),
               child: Text(postBody)
           ),
-          this.postPicture == null ? emptyWidget: Flexible(
+          this.postPictureUrl == null ? emptyWidget: Flexible(
             fit: FlexFit.loose,
-            child: this.postPicture,
+            child: containerImage(pictureUrl: this.postPictureUrl),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),

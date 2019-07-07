@@ -3,19 +3,28 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'package:boots/posts/insta_post.dart';
 import 'package:boots/database_helper.dart';
 import 'package:boots/main.dart';
-import 'package:boots/friends/friend_row.dart';
+
+
+
+Widget postsWidgetAdapterOld (Map<String, dynamic> t) {
+  String pictureUrl = t[DatabaseHelper.postPicture];
+  Widget ret = InstaPost(
+    postBody: t[DatabaseHelper.postBody] ?? "",
+    postPictureUrl: pictureUrl,
+  );
+  return ret;
+}
+
 
 Future<List<Map<String, dynamic>>> pageRequest (DatabaseTable table, int page, int pageSize) async {
   List<Map<String, dynamic>> rows = await DatabaseHelper.queryAllRows(table);
   return rows.sublist(0, min(pageSize, rows.length));
 }
 
-class LoadingListView extends StatefulWidget {
+class LoadingListViewOld extends StatefulWidget {
 
   DatabaseTable table;
 
@@ -29,7 +38,7 @@ class LoadingListView extends StatefulWidget {
   /// [PageView.reverse]
   final bool reverse;
 
-  LoadingListView( {
+  LoadingListViewOld( {
     this.table,
     this.pageSize: 50,
     this.pageThreshold:10,
@@ -38,11 +47,11 @@ class LoadingListView extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return new _LoadingListViewState(table: this.table);
+    return new _LoadingListViewOldState(table: this.table);
   }
 }
 
-class _LoadingListViewState extends State<LoadingListView> {
+class _LoadingListViewOldState extends State<LoadingListViewOld> {
 
   /// Contains all fetched elements ready to display!
   List<Map<String, dynamic>> objects = [];
@@ -53,14 +62,14 @@ class _LoadingListViewState extends State<LoadingListView> {
   var table;
   var widgetAdapter;
 
-  _LoadingListViewState({DatabaseTable table}) {
+  _LoadingListViewOldState({DatabaseTable table}) {
     this.table = table;
     switch (this.table) {
       case DatabaseTable.posts:
-        this.widgetAdapter = postsWidgetAdapter;
+        this.widgetAdapter = postsWidgetAdapterOld;
         break;
       case DatabaseTable.friends:
-        this.widgetAdapter = postsWidgetAdapter;
+        this.widgetAdapter = postsWidgetAdapterOld;
         break;
     }
   }
@@ -79,8 +88,8 @@ class _LoadingListViewState extends State<LoadingListView> {
       lockedLoadNext();
     }
 
-    return widgetAdapter != null ? widgetAdapter(objects[index])
-        : new Container();
+
+    return this.widgetAdapter(this.objects[index]);
   }
 
   @override
@@ -97,10 +106,12 @@ class _LoadingListViewState extends State<LoadingListView> {
 
   }
   Future onRefresh() async {
+    print('refresh');
     this.request?.timeout(const Duration());
     List<Map<String, dynamic>> fetched = await pageRequest(this.table, 0, widget.pageSize);
     setState(() {
       this.objects = fetched;
+      print(this.objects.length);
     });
 
     return true;
@@ -126,5 +137,3 @@ class _LoadingListViewState extends State<LoadingListView> {
     }
   }
 }
-
-

@@ -3,12 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
-
-import 'package:boots/posts/insta_post.dart';
-import 'package:boots/database_helper.dart';
-import 'package:boots/main.dart';
-import 'package:boots/friends/friend_row.dart';
+import 'package:boots/backend/classes.dart';
 
 class LoadingListView extends StatefulWidget {
 
@@ -43,7 +38,7 @@ class LoadingListView extends StatefulWidget {
 class _LoadingListViewState extends State<LoadingListView> {
 
   /// Contains all fetched elements ready to display!
-  List<Map<String, dynamic>> entries = [];
+  List<dynamic> entries = [];
   /// A Future returned by loadNext() if there
   /// is currently a request running
   /// or null, if no request is performed.
@@ -86,7 +81,7 @@ class _LoadingListViewState extends State<LoadingListView> {
 
   Future onRefresh() async {
     this.request?.timeout(const Duration());
-    List<Map<String, dynamic>> fetched = await this.pageRequest(page: 0, pageSize: widget.pageSize);
+    List<dynamic> fetched = await this.pageRequest(page: 0, pageSize: widget.pageSize);
     setState(() {
       this.entries = fetched;
     });
@@ -96,7 +91,7 @@ class _LoadingListViewState extends State<LoadingListView> {
 
   Future loadNext() async {
     int page = (entries.length / widget.pageSize).floor();
-    List<Map<String, dynamic>> fetched = await this.pageRequest(page: page, pageSize: widget.pageSize);
+    List<dynamic> fetched = await this.pageRequest(page: page, pageSize: widget.pageSize);
 
     if(mounted) {
       this.setState(() {

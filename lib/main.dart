@@ -7,30 +7,27 @@ import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:boots/database_helper.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
-import 'package:boots/loading_list_old.dart';
+import 'package:boots/loading_list.dart';
 import 'package:boots/posts/create_post.dart';
+import 'package:boots/posts/get_posts.dart';
 import 'package:boots/friends/friends_list.dart';
 import 'package:boots/backend/storage.dart';
+import 'package:boots/account/auth.dart';
+import 'package:boots/globals.dart';
+import 'package:boots/backend/classes.dart';
+import 'package:boots/backend/users.dart';
 
 
 final Widget emptyWidget = new Container(width: 0, height: 0);
 class MainBloc extends StatesRebuilder {
 }
 
-
 void main() async {
+  DocumentReference uche = Firestore.instance.collection('Users').document('Uche');
+  uche.setData(getNewUserEntry(name: 'Uche', handle: 'uchekl'));
 
-
-  CollectionReference messages = Firestore.instance.collection('rooms').document('roomA').collection('messages');
-  messages.add({DatabaseHelper.postBody: 'fuck. yes.'});
-
-  QuerySnapshot quer = await messages.getDocuments();
-  List<DocumentSnapshot> doc = quer.documents;
-  print(doc.take(1).single.data[DatabaseHelper.postBody]);
-
-  //runApp(new BootsApp());
+  runApp(new BootsApp());
 }
-
 
 
 class BootsApp extends StatelessWidget {
@@ -40,9 +37,17 @@ class BootsApp extends StatelessWidget {
       title: 'Lime',
       home: BlocProvider(
         bloc: MainBloc(),
-        child: MainPage(),
+        child: NavigationBootsApp(),
       )
     );
+  }
+}
+
+class NavigationBootsApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    baseBuildContext = context;
+    return MainPage();
   }
 }
 
@@ -73,10 +78,11 @@ class _MainPageState extends State<MainPage> {
 
   @override
   Widget build(BuildContext context) {
+
     return new Scaffold(
         body: new PageView(
             children: [
-              new LoadingListView(table: DatabaseTable.posts),
+              new LoadingListView(pageRequest: postsPageRequest, widgetFromEntry: postsWidgetFromEntry),
               new CreatePost(changePage: changePage),
               new FriendsScaffold(),
             ],
@@ -107,7 +113,6 @@ class _MainPageState extends State<MainPage> {
           currentIndex: _page,
         )
     );
-
   }
 
   /// Called when the user presses on of the
@@ -127,6 +132,7 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
+    BootsAuth.instance.getSignedInRef();
     _pageController = new PageController();
   }
 

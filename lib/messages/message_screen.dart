@@ -9,50 +9,53 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firestore_ui/firestore_ui.dart';
 import 'package:firestore_ui/animated_firestore_list.dart';
 
+import 'package:boots/account/auth.dart';
 import 'package:boots/messages/message_item.dart';
 import 'package:boots/backend/messaging.dart';
-import 'package:boots/backend/auth.dart';
 
 
 var _scaffoldContext;
 
+
+
 class ChatScreen extends StatefulWidget {
-  String groupId;
+  CollectionReference messagesCollection;
+  String groupName;
   ChatScreen({
-    this.groupId
+    this.messagesCollection,
+    this.groupName,
   });
   @override
   ChatScreenState createState() {
-    return new ChatScreenState(groupId: this.groupId);
+    return new ChatScreenState(messagesCollection: this.messagesCollection, groupName: this.groupName);
   }
 }
 
 class ChatScreenState extends State<ChatScreen> {
-  String groupId;
+  CollectionReference messagesCollection;
+  String groupName;
   ChatScreenState({
-    this.groupId,
+    this.messagesCollection,
+    this.groupName,
   });
 
   final TextEditingController _textEditingController =
   new TextEditingController();
   File imageFile;
   bool _isComposingText = false;
-  bool get _isComposingMessage {
-    return (this.imageFile != null || _isComposingText);
-  }
 
   @override
   Widget build(BuildContext context) {
     return new Scaffold(
         appBar: new AppBar(
           backgroundColor: Colors.lightGreen,
-          title: new Text("Missing Person 1"),
+          title: new Text(this.groupName),
           elevation:
           Theme.of(context).platform == TargetPlatform.iOS ? 0.0 : 4.0,
           actions: <Widget>[
             new IconButton(
                 icon: new Icon(Icons.exit_to_app), onPressed: () {
-                  signOut();
+                  BootsAuth.instance.signOut();
                   Scaffold
                       .of(_scaffoldContext)
                       .showSnackBar(new SnackBar(content: new Text('User logged out')));
@@ -61,6 +64,7 @@ class ChatScreenState extends State<ChatScreen> {
         ),
         body: new Container(
           child: new Column(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: <Widget>[
               new Flexible(
                 child: messagesDisplay()
@@ -89,7 +93,7 @@ class ChatScreenState extends State<ChatScreen> {
 
   Widget messagesDisplay() {
     return FirestoreAnimatedList(
-      query: messagesList(groupId: this.groupId),
+      query: this.messagesCollection.snapshots(),
       padding: const EdgeInsets.all(8.0),
       reverse: false,
       //comparing timestamp of messages to check which one would appear first
@@ -140,7 +144,12 @@ class ChatScreenState extends State<ChatScreen> {
                       color: Theme.of(context).accentColor,
                     ),
                     onPressed: () async{
-                      this.imageFile = await ImagePicker.pickImage(source: ImageSource.gallery);
+                      File chosenImage = await ImagePicker.pickImage(source: ImageSource.gallery);
+                      setState(() {
+                        imageFile = chosenImage;
+                        _isComposingText = true;
+                      });
+
                     }),
               ),
               new Flexible(
@@ -148,7 +157,7 @@ class ChatScreenState extends State<ChatScreen> {
                   controller: _textEditingController,
                   onChanged: (String messageText) {
                     setState(() {
-                      _isComposingText = messageText.length > 0;
+                      _isComposingText = messageText.length > 0 || imageFile != null;
                     });
                   },
                   onSubmitted: _textMessageSubmitted,
@@ -168,19 +177,17 @@ class ChatScreenState extends State<ChatScreen> {
   }
 
   Future<Null> _textMessageSubmitted(String text) async {
-    _textEditingController.clear();
-
-    setState(() {
-      _isComposingText = false;
-    });
-
     if (this.imageFile != null) {
-      performSendMessage(groupId: this.groupId, messageText: "", imageFile: this.imageFile);
+      performSendMessage(messagesCollection: this.messagesCollection, messageText: "", imageFile: this.imageFile);
     }
     if (text != null && text != "") {
-      performSendMessage(groupId: this.groupId, messageText: text, imageFile: null);
+      performSendMessage(messagesCollection: this.messagesCollection, messageText: text, imageFile: null);
     }
-    this.imageFile = null;
+    setState(() {
+      _isComposingText = false;
+      imageFile = null;
+    });
+    _textEditingController.clear();
   }
 }
 

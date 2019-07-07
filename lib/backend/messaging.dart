@@ -5,7 +5,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 
-import 'package:boots/backend/auth.dart';
+import 'package:boots/account/auth.dart';
+import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/storage.dart';
 
 
@@ -13,30 +14,30 @@ final analytics = new FirebaseAnalytics();
 var currentUserEmail;
 
 
-void performSendMessage({String groupId, String messageText, File imageFile}) async {
-  await ensureLoggedIn();
-  CollectionReference messages_collection = Firestore.instance.collection("groups").document(groupId).collection("messages");
+void performSendMessage({CollectionReference messagesCollection, String messageText, File imageFile}) async {
+
+
+  UserEntry senderEntry = await BootsAuth.instance.getSignedInEntry();
+
   if (imageFile == null) {
-    sendMessage(messages_collection: messages_collection, messageText: messageText, imageUrl: null);
+    sendMessage(messagesCollection: messagesCollection, messageText: messageText, imageUrl: null,
+    senderEntry: senderEntry);
   } else {
     String imageUrl = await uploadImage(imageFile);
-    sendMessage(messages_collection: messages_collection, messageText: messageText, imageUrl: imageUrl);
+    sendMessage(messagesCollection: messagesCollection, messageText: messageText, imageUrl: imageUrl,
+    senderEntry: senderEntry);
   }
 }
 
-void sendMessage({CollectionReference messages_collection, String messageText, String imageUrl}) {
-  messages_collection.add({
+void sendMessage({CollectionReference messagesCollection, String messageText, String imageUrl,
+  UserEntry senderEntry}) {
+  messagesCollection.add({
     'text': messageText,
-    'email': googleSignIn.currentUser.email,
+    'email': currentUserEmail,
     'imageUrl': imageUrl,
-    'senderName': googleSignIn.currentUser.displayName,
-    'senderPhotoUrl': googleSignIn.currentUser.photoUrl,
+    'senderName': senderEntry.handle,
+    'senderPhotoUrl': senderEntry.pictureUrl,
   });
-
   analytics.logEvent(name: 'send_message');
 }
 
-Stream<QuerySnapshot> messagesList({String groupId}) {
-  CollectionReference messages_collection = Firestore.instance.collection("groups").document(groupId).collection("messages");
-  return messages_collection.snapshots();
-}

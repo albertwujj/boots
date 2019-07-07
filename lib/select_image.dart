@@ -18,21 +18,19 @@ class PictureBloc extends StatesRebuilder {
 }
 
 void openCamera(BuildContext context) async {
-  final PictureBloc bloc = BlocProvider.of<PictureBloc>(context);
   File picture = await ImagePicker.pickImage(
     source: ImageSource.camera,
   );
-  bloc.setPicture(picture);
+  DatabaseHelper.currPicture = picture;
   Navigator.pop(context);
 }
 
 void openGallery(BuildContext context) async{
-  final PictureBloc bloc = BlocProvider.of<PictureBloc>(context);
+
   File picture = await ImagePicker.pickImage(
     source: ImageSource.gallery,
   );
-  bloc.setPicture(picture);
-  Navigator.pop(context);
+  DatabaseHelper.currPicture = picture;
 }
 
 Future<void> optionsDialogBox(BuildContext context) async {

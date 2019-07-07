@@ -6,13 +6,14 @@ import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_analytics/firebase_analytics.dart';
 
 import 'package:boots/backend/classes.dart';
-import 'package:boots/backend/auth.dart';
 
 
-void createGroup(List<String> userIds) {
+Future<String> createGroup({List<String> userHandles}) async {
   Map<String, dynamic> entry = {
-    Group.userList: userIds,
+    GroupKeys.userList: userHandles,
   };
-  Firestore.instance.collection("Groups").add(entry);
+  DocumentReference groupRef = await Firestore.instance.collection("Groups").add(entry);
+  return groupRef.documentID;
 }
+
 

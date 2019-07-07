@@ -3,6 +3,8 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 
+import 'package:boots/ui_helpers/pictures.dart';
+
 
 var currentUserEmail;
 
@@ -54,12 +56,10 @@ class ChatMessageListItem extends StatelessWidget {
       new Column(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: <Widget>[
-          new Container(
+          Container(
               margin: const EdgeInsets.only(left: 8.0),
-              child: new CircleAvatar(
-                backgroundImage:
-                new NetworkImage(messageSnapshot.data['senderPhotoUrl']),
-              )),
+              child: circleProfile(pictureUrl: messageSnapshot.data['senderPhotoUrl']),
+          )
         ],
       ),
     ];
@@ -70,12 +70,10 @@ class ChatMessageListItem extends StatelessWidget {
       new Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          new Container(
+          Container(
               margin: const EdgeInsets.only(right: 8.0),
-              child: new CircleAvatar(
-                backgroundImage:
-                new NetworkImage(messageSnapshot.data['senderPhotoUrl']),
-              )),
+              child: circleProfile(pictureUrl: messageSnapshot.data['senderPhotoUrl']),
+          )
         ],
       ),
       new Expanded(
