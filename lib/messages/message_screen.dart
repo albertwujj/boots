@@ -9,7 +9,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firestore_ui/firestore_ui.dart';
 import 'package:firestore_ui/animated_firestore_list.dart';
 
-import 'package:boots/account/auth.dart';
+import 'package:boots/auth.dart';
 import 'package:boots/messages/message_item.dart';
 import 'package:boots/backend/messaging.dart';
 

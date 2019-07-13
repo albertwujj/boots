@@ -8,10 +8,13 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:boots/loading_list.dart';
 import 'package:boots/posts/get_posts.dart';
+import 'package:boots/posts/create_post.dart';
 import 'package:boots/friends/friends_list.dart';
-import 'package:boots/account/auth.dart';
-import 'package:boots/globals.dart';
-import 'package:boots/backend/users.dart';
+import 'package:boots/auth.dart';
+import 'package:boots/backend/classes.dart';
+import 'package:boots/signin/landing_page.dart';
+import 'package:boots/signin/login_page.dart';
+import 'package:boots/signin/register_page.dart';
 
 
 final Widget emptyWidget = new Container(width: 0, height: 0);
@@ -20,33 +23,53 @@ class MainBloc extends StatesRebuilder {
 
 void main() async {
   DocumentReference uche = Firestore.instance.collection('Users').document('Uche');
-  uche.setData(getNewUserEntry(name: 'Uche', handle: 'uchekl'));
-
-  runApp(new BootsApp());
+  uche.setData(UserEntry.fromDetails(name: 'Uche', handle: 'uchekl').toDict());
+  runApp(BootsApp());
 }
 
-
-class BootsApp extends StatelessWidget {
+class BootsApp extends StatefulWidget {
   @override
-  Widget build(BuildContext context) {
-    return new MaterialApp(
-      title: 'Lime',
-      initialRoute: '/',
-      routes: {
-        '/': (context) => BlocProvider(bloc: MainBloc(), child: NavigationBootsApp()),
-        '/login': (context) => LoginPage(),
-        '/home': (context) => HomePage(),
-      },
-    );
+  State<StatefulWidget> createState() {
+    return BootsAppState();
   }
 }
 
-class NavigationBootsApp extends StatelessWidget {
+
+class BootsAppState extends State<BootsApp> {
+
+  String route;
+
   @override
   Widget build(BuildContext context) {
-    baseBuildContext = context;
-    return MainPage();
+
+    if (route == null) {
+      BootsAuth.instance.isLoggedIn().then((uid) async {
+        if (uid != null) {
+          await BootsAuth.instance.bootsLogin(uid);
+          setState(() {
+            this.route = 'home';
+          });
+        } else {
+          setState(() {
+            this.route = 'signin';
+          });
+        }
+      });
+      return Container();
+    }
+    else {
+      return MaterialApp(
+        title: 'Lime',
+        initialRoute: this.route,
+        routes: {
+          'signin': (context) => BootsDetails(),
+          'home': (context) =>
+              BlocProvider(bloc: MainBloc(), child: MainPage()),
+        },
+      );
+    }
   }
+
 }
 
 class MainPage extends StatefulWidget {
@@ -55,7 +78,6 @@ class MainPage extends StatefulWidget {
     return new _MainPageState();
   }
 }
-
 
 class _MainPageState extends State<MainPage> {
 
@@ -81,7 +103,7 @@ class _MainPageState extends State<MainPage> {
         body: new PageView(
             children: [
               new LoadingListView(pageRequest: postsPageRequest, widgetFromEntry: postsWidgetFromEntry),
-              new Uploader(changePage: changePage),
+              new CreatePost(),
               new FriendsScaffold(),
             ],
 
@@ -130,7 +152,7 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    BootsAuth.instance.getSignedInRef();
+    BootsAuth.instance.signedInRef;
     _pageController = new PageController();
   }
 

@@ -42,6 +42,7 @@ class UserEntry {
       UserKeys.pictureUrl: this.pictureUrl,
     };
   }
+
   factory UserEntry.fromDocSnap(DocumentSnapshot docSnap) {
     Map<String, dynamic> document = docSnap.data;
     return UserEntry(
@@ -54,6 +55,19 @@ class UserEntry {
       pictureUrl: document[UserKeys.pictureUrl],
     );
   }
+
+  factory UserEntry.fromDetails({String name, String handle}) {
+    return UserEntry(
+      name: name,
+      handle: handle,
+      requesters: <String>['fuck'],
+      friendsList: <String>[],
+      groupsList: <String>[],
+      postsList: <String>[],
+      pictureUrl: null,
+    );
+  }
+
 }
 
 

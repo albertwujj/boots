@@ -4,7 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
-import 'package:boots/account/auth.dart';
+import 'package:boots/auth.dart';
 import 'package:boots/ui_helpers/pictures.dart';
 import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/groups.dart';
@@ -20,9 +20,7 @@ class SearchFriendBloc extends StatesRebuilder {
     if (StatesRebuilder.listeners(this).length != 0) {
       rebuildStates();
     }
-
   }
-
 
   UserEntry getFriendEntry({int index}) {
     return UserEntry.fromDocSnap(results[index]);
@@ -31,40 +29,26 @@ class SearchFriendBloc extends StatesRebuilder {
   Future<void> addFriend({int index}) async {
 
     DocumentSnapshot friendSnap = this.results[index];
-    DocumentReference friendRef = friendSnap.reference;
     UserEntry friendEntry = UserEntry.fromDocSnap(friendSnap);
     String friendHandle = friendEntry.handle;
 
     UserEntry signedInEntry = await BootsAuth.instance.getSignedInEntry();
     String signedInHandle = signedInEntry.handle;
-    List<String> requesters = signedInEntry.requesters;
 
-    if ((true && !signedInEntry.friendsList.contains(friendHandle))|| requesters != null && requesters.contains(friendHandle)) {
+    Map<String, dynamic> signedInUpdate = {
+      UserKeys.friendsList: signedInEntry.friendsList + [friendHandle]
+    };
+    String addedGroupId;
+    if (friendEntry.friendsList.contains(signedInHandle)) {
+      DocumentSnapshot groupSnap = await findDMGroupFriend(friendHandle: friendHandle);
+      addedGroupId = groupSnap.documentID;
 
-      String groupId = await createGroup(userHandles: [signedInHandle, friendHandle]);
-      List<String> groupsList = signedInEntry.groupsList;
-      List<String> friendsList = signedInEntry.friendsList;
-      (await BootsAuth.instance.getSignedInRef()).updateData({
-        UserKeys.friendsList: friendsList + [friendHandle],
-        UserKeys.groupsList: groupsList + [groupId],
-      });
-
-      List<String> friendGroupsList = friendEntry.groupsList;
-      List<String> friendFriendsList = friendEntry.friendsList;
-      friendRef.setData({
-        UserKeys.friendsList: friendFriendsList + [signedInHandle],
-        UserKeys.groupsList: friendGroupsList + [groupId],
-      });
-      print('added friend');
     } else {
-
-      List<String> friendRequesters = friendEntry.requesters;
-      friendRef.updateData({
-        UserKeys.requesters: friendRequesters + [signedInHandle],
-      });
+      addedGroupId  = await createGroup(userHandles: [signedInHandle, friendHandle]);
     }
-  }
+    signedInUpdate[UserKeys.groupsList] = signedInEntry.groupsList + [addedGroupId];
 
+  }
 }
 
 class FriendsSearchDelegate extends SearchDelegate {

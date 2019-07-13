@@ -10,14 +10,15 @@ import 'package:boots/ui_helpers/pictures.dart';
 import 'package:boots/messages/message_screen.dart';
 import 'package:boots/friends/add_friends.dart';
 import 'package:boots/loading_list.dart';
-import 'package:boots/account/auth.dart';
+import 'package:boots/auth.dart';
 import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/users.dart';
+import 'package:boots/backend/groups.dart';
 
 
 
 Future<List<UserEntry>> loadFriendsEntries() async {
-  DocumentReference signedInRef = await BootsAuth.instance.getSignedInRef();
+  DocumentReference signedInRef = await BootsAuth.instance.signedInRef;
   DocumentSnapshot signedInSnap = await signedInRef.get();
   print('signedinSnap $signedInSnap');
   UserEntry entry = UserEntry.fromDocSnap(signedInSnap);
@@ -66,7 +67,7 @@ class FriendsScaffoldState extends State<FriendsScaffold> {
 
       return GestureDetector(
         onTap: () async {
-          CollectionReference messages = (await findDMGroup(friendHandle: friendHandle)).collection(GroupKeys.messages);
+          CollectionReference messages = (await findDMGroupSelf(friendHandle: friendHandle)).reference.collection(GroupKeys.messages);
           Navigator.push(
             context,
             MaterialPageRoute(builder: (context) => ChatScreen(messagesCollection: messages, groupName: friendName)),
