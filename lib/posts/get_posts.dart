@@ -29,9 +29,11 @@ Future<List<dynamic>> toPostEntriesList(List<String> postIds) async {
 
 Future<List<dynamic>> postsPageRequest ({int page, int pageSize}) async {
   DocumentReference signedInRef = await BootsAuth.instance.signedInRef;
-  print('pagerequest ref $signedInRef');
   DocumentSnapshot signedInSnap = await signedInRef.get();
-  print('pagerequest snap $signedInSnap');
+  if (!signedInSnap.exists) {
+    print('postsPageRequest - signedInRef does not have entry');
+    return [];
+  }
   UserEntry signedInEntry = UserEntry.fromDocSnap(signedInSnap);
   List<String> friendHandles = signedInEntry.friendsList;
   List<DocumentSnapshot> friendSnaps = await findUserSnaps(handles: friendHandles);

@@ -3,6 +3,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -12,7 +13,6 @@ import 'package:boots/posts/create_post.dart';
 import 'package:boots/friends/friends_list.dart';
 import 'package:boots/auth.dart';
 import 'package:boots/backend/classes.dart';
-import 'package:boots/signin/landing_page.dart';
 import 'package:boots/signin/login_page.dart';
 import 'package:boots/signin/register_page.dart';
 
@@ -24,6 +24,7 @@ class MainBloc extends StatesRebuilder {
 void main() async {
   DocumentReference uche = Firestore.instance.collection('Users').document('Uche');
   uche.setData(UserEntry.fromDetails(name: 'Uche', handle: 'uchekl').toDict());
+  await BootsAuth.instance.signOut();
   runApp(BootsApp());
 }
 
@@ -50,8 +51,16 @@ class BootsAppState extends State<BootsApp> {
             this.route = 'home';
           });
         } else {
-          setState(() {
-            this.route = 'signin';
+          BootsAuth.instance.hasRegisteredBefore().then((hasReg) {
+            if (hasReg) {
+              setState(() {
+                this.route = 'login';
+              });
+            } else {
+              setState(() {
+                this.route = 'register';
+              });
+            }
           });
         }
       });
@@ -62,7 +71,8 @@ class BootsAppState extends State<BootsApp> {
         title: 'Lime',
         initialRoute: this.route,
         routes: {
-          'signin': (context) => BootsDetails(),
+          'login': (context) => LoginPage(),
+          'register': (context) => AuthConnect(),
           'home': (context) =>
               BlocProvider(bloc: MainBloc(), child: MainPage()),
         },
@@ -101,15 +111,15 @@ class _MainPageState extends State<MainPage> {
 
     return new Scaffold(
         body: new PageView(
-            children: [
-              new LoadingListView(pageRequest: postsPageRequest, widgetFromEntry: postsWidgetFromEntry),
-              new CreatePost(),
-              new FriendsScaffold(),
-            ],
+          children: [
+            new LoadingListView(pageRequest: postsPageRequest, widgetFromEntry: postsWidgetFromEntry),
+            new CreatePost(),
+            new FriendsScaffold(),
+          ],
 
-            /// Specify the page controller
-            controller: _pageController,
-            onPageChanged: onPageChanged,
+          /// Specify the page controller
+          controller: _pageController,
+          onPageChanged: onPageChanged,
         ),
         bottomNavigationBar: new BottomNavigationBar(
           items: [

@@ -7,7 +7,7 @@ import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:image_picker/image_picker.dart';
 
 import 'package:boots/database_helper.dart';
-
+import 'package:boots/posts/create_post.dart';
 
 class PictureBloc extends StatesRebuilder {
   File picture;
@@ -21,7 +21,7 @@ void openCamera(BuildContext context) async {
   File picture = await ImagePicker.pickImage(
     source: ImageSource.camera,
   );
-  DatabaseHelper.currPicture = picture;
+  NewPostPicture.picture = picture;
   Navigator.pop(context);
 }
 
@@ -30,7 +30,8 @@ void openGallery(BuildContext context) async{
   File picture = await ImagePicker.pickImage(
     source: ImageSource.gallery,
   );
-  DatabaseHelper.currPicture = picture;
+  NewPostPicture.picture = picture;
+  Navigator.pop(context);
 }
 
 Future<void> optionsDialogBox(BuildContext context) async {

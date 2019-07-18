@@ -4,9 +4,9 @@ import 'package:flutter/widgets.dart';
 
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 
+import 'package:boots/signin/register_page.dart';
 import 'package:boots/auth.dart';
 import 'package:boots/ui_helpers/primary_button.dart';
-import 'package:boots/signin/boots_details.dart';
 
 
 Widget padded({Widget child}) {
@@ -16,87 +16,22 @@ Widget padded({Widget child}) {
   );
 }
 
-class SignInPage extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return SignInPageState();
-  }
-}
-class SignInPageState extends State<SignInPage> {
-  bool isLogin = true;
-  @override
-  Widget build(BuildContext context) {
-
-    return isLogin ?
-    Scaffold(body:
-      Column(children: <Widget>[
-        FlatButton(
-            child: Text('Register'),
-            onPressed: () {
-              setState(() {
-                this.isLogin = false;
-              });
-            },
-        ),
-        GoogleSignInButton(onPressed:
-          //login
-          () async {
-            try {
-              await BootsAuth.instance.googleSignIn();
-            }
-            catch (e) {
-              //TODO: handle google register in exception
-            }
-            Navigator.pushNamed(context, 'home');
-          }
-        ),
-
-      ])
-    ) :
-    Scaffold(body:
-      Column(children: <Widget>[
-        FlatButton(
-          child: Text('Login'),
-          onPressed: () {
-            setState(() {
-              this.isLogin = true;
-            });
-          },
-        ),
-        GoogleSignInButton(onPressed:
-        //login
-          () async {
-            try {
-              await BootsAuth.instance.googleSignIn();
-            }
-            catch (e) {
-              //TODO: handle google register in exception
-            }
-            Navigator.push(context, MaterialPageRoute(builder: (context) => BootsDetails()));
-          }
-        ),
-      ])
-    );
-  }
-}
-
-
-class LoginForm extends StatefulWidget {
+class LoginPage extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return LoginFormState();
+    return LoginPageState();
   }
 }
 
-class LoginFormState extends State<LoginForm> {
+class LoginPageState extends State<LoginPage> {
 
   static final formKey = new GlobalKey<FormState>();
   String _email;
   String _password;
 
   bool validateAndSave() {
-    final form = LoginFormState.formKey.currentState;
+    final form = LoginPageState.formKey.currentState;
     if (form.validate()) {
       form.save();
       return true;
@@ -151,97 +86,57 @@ class LoginFormState extends State<LoginForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Form(
-        key: AuthRegisterFormState.formKey,
-        child: new Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              emailTextField(),
-              passwordTextField(),
-              formSubmitButton(context),
+    return Scaffold(
+        appBar: AppBar(
+          title: Text(''),
+        ),
+        backgroundColor: Colors.grey[300],
+        body: SingleChildScrollView(child: new Container(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(children: [
+              Card(
+                  child: new Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: <Widget>[
+                        new Container(
+                            padding: const EdgeInsets.all(16.0),
+                            child: new Form(
+                                key: LoginPageState.formKey,
+                                child: new Column(
+                                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                                  children: [
+                                    emailTextField(),
+                                    passwordTextField(),
+                                    formSubmitButton(context),
+                                  ],
+                                )
+                            )
+                        ),
+                      ])
+              ),
+              Row(children: [
+                GoogleSignInButton(onPressed: () async {
+                  await BootsAuth.instance.googleSignIn();
+                  if (BootsAuth.instance.signedInSnap.exists) {
+                    Navigator.pushNamed(context, 'home');
+                  } else {
+                    Navigator.push(context, MaterialPageRoute(builder:
+                        (context) => BootsDetails()));
+                  }
+
+                }),
+              ]),
+              PrimaryButton(
+                key: Key('goRegister'),
+                text: 'Register a new account',
+                height: 33.0,
+                onPressed: () {Navigator.pushNamed(context, 'register');},
+              ),
             ]
-        )
+            )
+        ))
     );
   }
 }
 
-class AuthRegisterForm extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return AuthRegisterFormState();
-  }
-}
 
-class AuthRegisterFormState extends State<AuthRegisterForm> {
-
-  static final formKey = new GlobalKey<FormState>();
-  String _email;
-  String _password;
-
-  bool validateAndSave() {
-    final form = AuthRegisterFormState.formKey.currentState;
-    if (form.validate()) {
-      form.save();
-      return true;
-    }
-    return false;
-  }
-
-  void validateAndSubmit(BuildContext context) async {
-    if (validateAndSave()) {
-      try {
-        await BootsAuth.instance.emailRegister(email: this._email, password: this._password);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => BootsDetails()));
-      }
-      catch (e) {
-        print('add user exception');
-        print(e);
-      }
-    }
-  }
-
-  Widget emailTextField() {
-    return padded(child: new TextFormField(
-      key: new Key('email'),
-      decoration: new InputDecoration(labelText: 'Email'),
-      autocorrect: false,
-      validator: (val) => val.isEmpty ? 'name can\'t be empty.' : null,
-      onSaved: (val) => _email = val,
-    ));
-  }
-  Widget passwordTextField() {
-    return padded(child: new TextFormField(
-      key: new Key('password'),
-      obscureText: true,
-      decoration: new InputDecoration(labelText: 'Password'),
-      autocorrect: false,
-      validator: (val) => val.length < 6 ? 'password must be 6 or more characters' : null,
-      onSaved: (val) => _password = val,
-    ));
-  }
-
-  Widget formSubmitButton(BuildContext context) {
-    return PrimaryButton(
-      key: new Key('authRegister'),
-      text: 'Continue',
-      height: 44.0,
-      onPressed: () { validateAndSubmit(context); },
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Form(
-      key: AuthRegisterFormState.formKey,
-      child: new Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          emailTextField(),
-          passwordTextField(),
-          formSubmitButton(context),
-        ]
-      )
-    );
-
-  }
-}

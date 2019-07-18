@@ -30,10 +30,6 @@ class BootsAuth {
     return UserEntry.fromDocSnap(signedInSnap);
   }
 
-  Future<void> updateSnap() async {
-    this.signedInSnap = await this.signedInRef.get();
-  }
-
   Future<UserEntry> getSignedInEntry() async{
     DocumentSnapshot snap = await signedInRef.get();
     return UserEntry.fromDocSnap(snap);
@@ -42,20 +38,15 @@ class BootsAuth {
   Future<String> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     String signInUid = prefs.getString('SignInUid');
+    print('isLoggedIn with uid $signInUid');
     return signInUid;
   }
 
   Future<bool> hasRegisteredBefore() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool('HasReg');
+    return prefs.getBool('HasReg') == true;
   }
 
-  Future<void> completeRegister() async {
-    await BootsAuth.instance.signedInRef.setData(BootsAuth.registeringEntry.toDict());
-    BootsAuth.instance.signedInSnap = await BootsAuth.instance.signedInRef.get();
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('HasReg', true);
-  }
 
   Future<void> bootsLogin(String uid) async {
     this.signedInRef = Firestore.instance.collection('Users').document(uid);

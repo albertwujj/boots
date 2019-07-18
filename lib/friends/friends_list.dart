@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'package:boots/ui_helpers/pictures.dart';
 import 'package:boots/messages/message_screen.dart';
@@ -32,7 +31,6 @@ Future<List<UserEntry>> loadFriendsEntries() async {
 }
 
 
-
 class FriendsScaffold extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
@@ -51,12 +49,14 @@ class FriendsScaffoldState extends State<FriendsScaffold> {
     super.initState();
 
     loadFriendsEntries().then((friendEntries){
-      setState(() {
-      _friendEntries = friendEntries;
-      });
+      if (this.mounted) {
+        setState(() {
+          _friendEntries = friendEntries;
+        });
+      }
     });
-
   }
+
   @override
   Widget build(BuildContext context) {
 
@@ -92,7 +92,6 @@ class FriendsScaffoldState extends State<FriendsScaffold> {
             UserEntry friendEntry = this._friendEntries[i];
             return widgetFromEntry(friendEntry: friendEntry);
           },
-
           itemCount: this._friendEntries?.length ?? 0,
         )
       ),
@@ -122,6 +121,5 @@ class FriendsScaffoldState extends State<FriendsScaffold> {
         )
       ]
     );
-
   }
 }

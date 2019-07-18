@@ -60,7 +60,7 @@ class UserEntry {
     return UserEntry(
       name: name,
       handle: handle,
-      requesters: <String>['fuck'],
+      requesters: <String>[],
       friendsList: <String>[],
       groupsList: <String>[],
       postsList: <String>[],
