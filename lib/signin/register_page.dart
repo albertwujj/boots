@@ -220,12 +220,12 @@ class BootsDetailsState extends State<BootsDetails> {
                                 child: new Form(
                                     key: BootsDetailsState.formKey,
                                     child: new Column(
-                                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                                      children: [
-                                        nameTextField(),
-                                        handleTextField(),
-                                        formSubmitButton(context),
-                                      ]
+                                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                                        children: [
+                                          nameTextField(),
+                                          handleTextField(),
+                                          formSubmitButton(context),
+                                        ]
                                     )
                                 )
                             ),
