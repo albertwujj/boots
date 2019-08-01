@@ -13,7 +13,6 @@ import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/users.dart';
 
 
-
 class SignInMethods {
   static final String google = 'google';
 }
@@ -30,11 +29,6 @@ class BootsAuth {
     return UserEntry.fromDocSnap(signedInSnap);
   }
 
-  Future<UserEntry> getSignedInEntry() async{
-    DocumentSnapshot snap = await signedInRef.get();
-    return UserEntry.fromDocSnap(snap);
-  }
-
   Future<String> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
     String signInUid = prefs.getString('SignInUid');
@@ -46,7 +40,6 @@ class BootsAuth {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('HasReg') == true;
   }
-
 
   Future<void> bootsLogin(String uid) async {
     this.signedInRef = Firestore.instance.collection('Users').document(uid);

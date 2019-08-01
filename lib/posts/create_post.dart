@@ -4,20 +4,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/services.dart';
 
-import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:image_picker/image_picker.dart';
 
 import 'package:boots/backend/classes.dart';
 import 'package:boots/auth.dart';
-import 'package:boots/database_helper.dart';
-import 'package:boots/select_image.dart';
 import 'package:boots/backend/storage.dart';
+
 
 class NewPostPicture {
   static File picture;
 }
 
 class CreatePost extends StatefulWidget {
+  CreatePost();
   @override
   State<StatefulWidget> createState() {
     return CreatePostState();
@@ -26,30 +26,96 @@ class CreatePost extends StatefulWidget {
 
 class CreatePostState extends State<CreatePost> {
 
-  var changePage;
-  CreatePostState({this.changePage});
+  CreatePostState();
   BuildContext context;
   TextEditingController textController = TextEditingController();
+  bool _uploading = false;
+  String _pictureUrl;
+  bool _clickable = true;
+
+  void openCamera(BuildContext context) async {
+    setState(() {
+      _uploading = true;
+    });
+    File picture = await ImagePicker.pickImage(
+      source: ImageSource.camera,
+    );
+    Navigator.pop(context);
+    String pictureUrl = await uploadImage(picture);
+    setState(() {
+      _pictureUrl = pictureUrl;
+      _uploading = false;
+    });
+  }
+
+  void openGallery(BuildContext context) async{
+    setState(() {
+      _uploading = true;
+    });
+    File picture = await ImagePicker.pickImage(
+      source: ImageSource.gallery,
+    );
+    Navigator.pop(context);
+    String pictureUrl = await uploadImage(picture);
+    setState(() {
+      _pictureUrl = pictureUrl;
+      _uploading = false;
+    });
+  }
+
+  Future<void> optionsDialogBox(BuildContext context) async {
+    await showDialog(context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: new SingleChildScrollView(
+            child: new ListBody(
+              children: <Widget>[
+                GestureDetector(
+                  child: new Text('Take a picture'),
+                  onTap: () => openCamera(context),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                GestureDetector(
+                  child: new Text('Select from gallery'),
+                  onTap: () {
+                    openGallery(context);
+                  },
+                ),
+                ],
+              ),
+            ),
+        );
+      }
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
     this.context = context;
-    return Scaffold(body: new GestureDetector(
-      onTap: () { print('Tapped out of field'); FocusScope.of(context).requestFocus(new FocusNode()); },
-      child: Stack(children: <Widget>[
+
+    Widget uploadButton = Icon(Icons.file_upload, size: 140,);
+    if (_pictureUrl != null) {
+      uploadButton = Image.network(_pictureUrl);
+    }
+    if (_uploading) {
+      uploadButton = Icon(Icons.loop, size: 140,);
+    }
+    return Scaffold(
+      body: Stack(children: <Widget>[
         Column(mainAxisAlignment:MainAxisAlignment.start, children: <Widget>[
           SizedBox(height: 100),
           FlatButton(
-            color: Colors.white,
+            color: Colors.transparent,
             textColor: Colors.green,
             disabledColor: Colors.grey,
             disabledTextColor: Colors.black,
             padding: EdgeInsets.all(8.0),
             splashColor: Colors.blueAccent,
             onPressed: () => optionsDialogBox(context),
-            child: Icon(Icons.picture_in_picture, size: 140,),
+            child: uploadButton,
           ),
-
           SizedBox(height: 60),
           TextField(
             decoration: InputDecoration(
@@ -70,27 +136,32 @@ class CreatePostState extends State<CreatePost> {
                     'Make post',
                     style: TextStyle(fontSize: 20),
                   ),
-                  onPressed: submitPost,
+                  onPressed: () {
+                    if (_clickable && !_uploading) {
+                      submitPost();
+                    }
+                  },
                 )
             )
         ),
       ]
       )
-      )
     );
   }
 
   void submitPost() async {
-    String body = textController.text;
-    File picture = NewPostPicture.picture;
-    String pictureUrl = picture == null ? null : await uploadImage(picture);
-    PostEntry postEntry = PostEntry(pictureUrl: pictureUrl, body: body, likes: 0);
+    print('submitPost');
+    setState((){
+      _clickable = false;
+    });
+    String body = textController.text ?? "";
+    PostEntry postEntry = PostEntry(pictureUrl: _pictureUrl, body: body, likes: 0);
     DocumentReference postRef = await Firestore.instance.collection('Posts').add(postEntry.toDict());
-    BootsAuth.instance.signedInRef.updateData({
+
+    await BootsAuth.instance.signedInRef.updateData({
       UserKeys.postsList: (BootsAuth.instance.signedInSnap)[UserKeys.postsList] + [postRef.documentID],
     });
     BootsAuth.instance.signedInSnap = await BootsAuth.instance.signedInRef.get();
-    this.changePage(0);
+    Navigator.pop(this.context);
   }
 }
-

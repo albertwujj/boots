@@ -1,26 +1,30 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
+import 'package:boots/auth.dart';
 
-Widget circleProfile({String pictureUrl}) {
-  return CircleAvatar(backgroundImage:
-    pictureUrl == null ? AssetImage('assets/default_profile.jpg') : NetworkImage(pictureUrl),
+
+Widget circleProfile({String pictureUrl, double radius: 50.0}) {
+
+  ImageProvider image = pictureUrl == null ?
+    AssetImage('assets/default_profile.jpg') :
+    NetworkImage(pictureUrl);
+
+  return CircleAvatar(
+    radius: radius,
+    backgroundImage: image,
   );
 }
 
+Widget fileCircleProfile({File file, double radius: 50.0}) {
+  ImageProvider image = file == null ?
+    AssetImage('assets/default_profile.jpg') :
+    FileImage(file);
 
-Widget containerImage({String pictureUrl, double height: 300.0, double width: 300.0}){
-  return Container(
-    height: height,
-    width: width,
-    decoration: BoxDecoration(
-        image: DecorationImage(
-          image: pictureUrl == null ?
-          AssetImage('assets/default_profile.jpg')
-              : NetworkImage(pictureUrl),
-          fit: BoxFit.fill,
-        )
-    ),
+  return CircleAvatar(
+    radius: radius,
+    backgroundImage: image,
   );
 }
 

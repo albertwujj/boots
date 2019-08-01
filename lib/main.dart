@@ -1,20 +1,17 @@
-import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:boots/loading_list.dart';
 import 'package:boots/posts/get_posts.dart';
 import 'package:boots/posts/create_post.dart';
-import 'package:boots/friends/friends_list.dart';
 import 'package:boots/auth.dart';
 import 'package:boots/backend/classes.dart';
 import 'package:boots/signin/login_page.dart';
 import 'package:boots/signin/register_page.dart';
+import 'package:boots/profile/profile_page.dart';
 
 
 final Widget emptyWidget = new Container(width: 0, height: 0);
@@ -24,7 +21,6 @@ class MainBloc extends StatesRebuilder {
 void main() async {
   DocumentReference uche = Firestore.instance.collection('Users').document('Uche');
   uche.setData(UserEntry.fromDetails(name: 'Uche', handle: 'uchekl').toDict());
-  await BootsAuth.instance.signOut();
   runApp(BootsApp());
 }
 
@@ -79,7 +75,6 @@ class BootsAppState extends State<BootsApp> {
       );
     }
   }
-
 }
 
 class MainPage extends StatefulWidget {
@@ -87,6 +82,10 @@ class MainPage extends StatefulWidget {
   State<StatefulWidget> createState() {
     return new _MainPageState();
   }
+}
+
+enum MainPages {
+  feed, friends
 }
 
 class _MainPageState extends State<MainPage> {
@@ -109,39 +108,47 @@ class _MainPageState extends State<MainPage> {
   @override
   Widget build(BuildContext context) {
 
-    return new Scaffold(
-        body: new PageView(
+    return Scaffold(
+        body: PageView(
           children: [
-            new LoadingListView(pageRequest: postsPageRequest, widgetFromEntry: postsWidgetFromEntry),
-            new CreatePost(),
-            new FriendsScaffold(),
+            Scaffold(
+              body: LoadingListView(pageRequest: postsPageRequest, widgetFromEntry: postsWidgetFromEntry),
+              floatingActionButton: FloatingActionButton(
+                backgroundColor: Colors.lightGreen,
+                child: Icon(Icons.add_box),
+                onPressed: () {
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => CreatePost()));
+                }
+              ),
+            ),
+            BootsDetails(),
+            ProfilePage(),
           ],
-
           /// Specify the page controller
           controller: _pageController,
           onPageChanged: onPageChanged,
         ),
-        bottomNavigationBar: new BottomNavigationBar(
+        bottomNavigationBar: BottomNavigationBar(
           items: [
-            new BottomNavigationBarItem(
-                icon: new Icon(Icons.insert_photo),
-                title: new Text("feed")
+            BottomNavigationBarItem(
+                icon: Icon(Icons.insert_photo),
+                title: Text("feed")
             ),
-            new BottomNavigationBarItem(
-                icon: new Icon(Icons.add),
-                title: new Text("create")
+            BottomNavigationBarItem(
+                icon: Icon(Icons.people),
+                title: Text("friends")
             ),
-            new BottomNavigationBarItem(
-                icon: new Icon(Icons.people),
-                title: new Text("community")
-            )
+            BottomNavigationBarItem(
+              icon: Icon(Icons.person),
+              title: Text("profile"),
+            ),
           ],
 
           /// Will be used to scroll to the next page
           /// using the _pageController
           onTap: navigationTapped,
           currentIndex: _page,
-        )
+        ),
     );
   }
 
@@ -162,7 +169,6 @@ class _MainPageState extends State<MainPage> {
   @override
   void initState() {
     super.initState();
-    BootsAuth.instance.signedInRef;
     _pageController = new PageController();
   }
 

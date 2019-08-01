@@ -54,6 +54,7 @@ class LoginPageState extends State<LoginPage> {
     }
   }
 
+
   Widget emailTextField() {
     return padded(child: new TextFormField(
       key: new Key('email'),
@@ -63,6 +64,7 @@ class LoginPageState extends State<LoginPage> {
       onSaved: (val) => _email = val,
     ));
   }
+
 
   Widget passwordTextField() {
     return padded(child: new TextFormField(
@@ -74,6 +76,7 @@ class LoginPageState extends State<LoginPage> {
       onSaved: (val) => _password = val,
     ));
   }
+
 
   Widget formSubmitButton(BuildContext context) {
     return PrimaryButton(

@@ -1,17 +1,22 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 import 'package:boots/ui_helpers/primary_button.dart';
 import 'package:boots/backend/classes.dart';
 import 'package:boots/auth.dart';
+import 'package:boots/backend/storage.dart';
+import 'package:boots/ui_helpers/pictures.dart';
 
 
-Widget padded({Widget child}) {
+Widget padded(Widget child, {double amount: 8.0}) {
   return new Padding(
-    padding: EdgeInsets.symmetric(vertical: 8.0),
+    padding: EdgeInsets.symmetric(vertical: amount),
     child: child,
   );
 }
@@ -53,23 +58,23 @@ class AuthConnectState extends State<AuthConnect> {
   }
 
   Widget emailTextField() {
-    return padded(child: new TextFormField(
+    return TextFormField(
       key: new Key('email'),
       decoration: new InputDecoration(labelText: 'Email'),
       autocorrect: false,
       validator: (val) => val.isEmpty ? 'name can\'t be empty.' : null,
       onSaved: (val) => _email = val,
-    ));
+    );
   }
   Widget passwordTextField() {
-    return padded(child: new TextFormField(
+    return TextFormField(
       key: new Key('password'),
       obscureText: true,
       decoration: new InputDecoration(labelText: 'Password'),
       autocorrect: false,
       validator: (val) => val.length < 6 ? 'password must be 6 or more characters' : null,
       onSaved: (val) => _password = val,
-    ));
+    );
   }
 
   Widget formSubmitButton(BuildContext context) {
@@ -149,6 +154,23 @@ class BootsDetailsState extends State<BootsDetails> {
   static final formKey = new GlobalKey<FormState>();
   String _name;
   String _handle;
+  File _picture;
+
+  Widget wrapTextField(Widget textField, {String name}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(top: 12.0),
+          child: Text(
+            name,
+            style: TextStyle(color: Colors.grey),
+          ),
+        ),
+        textField,
+      ],
+    );
+  }
 
   bool validateAndSave() {
     final form = BootsDetailsState.formKey.currentState;
@@ -162,8 +184,9 @@ class BootsDetailsState extends State<BootsDetails> {
   void validateAndSubmit(BuildContext context) async {
     if (validateAndSave()) {
       try {
+        String dpUrl = await uploadImage(_picture);
         BootsAuth.instance.signedInRef.setData(
-            UserEntry.fromDetails(name: this._name, handle: this._handle)
+            UserEntry.fromDetails(name: _name, handle: _handle, dpUrl: dpUrl)
                 .toDict());
         BootsAuth.instance.signedInSnap =
         await BootsAuth.instance.signedInRef.get();
@@ -180,23 +203,23 @@ class BootsDetailsState extends State<BootsDetails> {
   }
 
   Widget nameTextField() {
-    return padded(child: new TextFormField(
+    return TextFormField(
       key: new Key('name'),
-      decoration: new InputDecoration(labelText: 'Your Name'),
+      decoration: new InputDecoration(labelText: 'Display Name'),
       autocorrect: false,
       validator: (val) => val.isEmpty ? 'Name can\'t be empty.' : null,
       onSaved: (val) => _name = val,
-    ));
+    );
   }
 
   Widget handleTextField() {
-    return padded(child: new TextFormField(
+    return TextFormField(
       key: new Key('handle'),
       decoration: new InputDecoration(labelText: 'Unique Username'),
       autocorrect: false,
       validator: (val) => val.isEmpty ? 'Username can\'t be empty.' : null,
       onSaved: (val) => _handle = val,
-    ));
+    );
   }
 
   Widget formSubmitButton(BuildContext context) {
@@ -207,6 +230,76 @@ class BootsDetailsState extends State<BootsDetails> {
       onPressed: () {
         validateAndSubmit(context);
       },
+    );
+  }
+
+  void openCamera(BuildContext context) async {
+    Navigator.pop(context);
+    File pictureFile = await ImagePicker.pickImage(
+      source: ImageSource.camera,
+    );
+    pictureFile = await ImageCropper.cropImage(sourcePath: pictureFile.path);
+    setState(() {
+      _picture = pictureFile;
+    });
+  }
+
+  void openGallery(BuildContext context) async{
+    Navigator.pop(context);
+    File pictureFile = await ImagePicker.pickImage(
+      source: ImageSource.gallery,
+    );
+    pictureFile = await ImageCropper.cropImage(sourcePath: pictureFile.path);
+    setState(() {
+      _picture = pictureFile;
+    });
+  }
+
+  Future<void> changeProfilePhoto(BuildContext context) async {
+    await showDialog(context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          content: new SingleChildScrollView(
+            child: new ListBody(
+              children: <Widget>[
+                GestureDetector(
+                  child: new Text('Take a picture'),
+                  onTap: () => openCamera(context),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(8.0),
+                ),
+                GestureDetector(
+                  child: new Text('Select from gallery'),
+                  onTap: () {
+                    openGallery(context);
+                  },
+                ),
+                ],
+              ),
+            ),
+        );
+      }
+    );
+  }
+
+  Widget profilePhoto() {
+    return fileCircleProfile(file: _picture);
+  }
+
+  Widget profilePhotoButton(BuildContext context) {
+    return FlatButton(
+      onPressed: () {
+        changeProfilePhoto(context);
+      },
+      child: Text(
+        "Change Photo",
+        style: const TextStyle(
+          color: Colors.blue,
+          fontSize: 20.0,
+          fontWeight: FontWeight.bold
+        ),
+      )
     );
   }
 
@@ -224,11 +317,13 @@ class BootsDetailsState extends State<BootsDetails> {
               child: new Form(
                   key: BootsDetailsState.formKey,
                   child: new Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
-                        nameTextField(),
-                        handleTextField(),
-                        formSubmitButton(context),
+                        profilePhoto(),
+                        profilePhotoButton(context),
+                        wrapTextField(nameTextField(), name:'Display Name'),
+                        padded(handleTextField()),
+                        padded(formSubmitButton(context), amount: 15.0),
                       ]
                   )
               )

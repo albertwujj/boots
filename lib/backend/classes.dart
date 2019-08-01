@@ -3,11 +3,14 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserKeys {
   static final name = "name";
   static final handle = "handle";
+  static final bio = "bio";
+  static final dpUrl = "pictureUrl";
   static final requesters = "requesters";
+  static final followingList = "followingList";
   static final friendsList = "friendsList";
   static final groupsList = "groupList";
   static final postsList = "postsList";
-  static final pictureUrl = "pictureUrl";
+
 
 }
 
@@ -15,31 +18,39 @@ class UserKeys {
 class UserEntry {
   final String name;
   final String handle;
+  final String bio;
+  final String dpUrl;
   final List<String> requesters;
+  final List<String> followingList;
   final List<String> friendsList;
   final List<String> groupsList;
   final List<String> postsList;
-  final String pictureUrl;
+
 
   const UserEntry(
-      {this.name,
+      {
+        this.name,
         this.handle,
+        this.bio,
+        this.dpUrl,
         this.requesters,
+        this.followingList,
         this.friendsList,
         this.groupsList,
         this.postsList,
-        this.pictureUrl,
       });
 
   Map<String, dynamic> toDict() {
     return {
       UserKeys.name: this.name,
       UserKeys.handle: this.handle,
+      UserKeys.bio: this.bio,
+      UserKeys.dpUrl: this.dpUrl,
       UserKeys.requesters: this.requesters,
+      UserKeys.followingList: this.followingList,
       UserKeys.friendsList: this.friendsList,
       UserKeys.groupsList: this.groupsList,
       UserKeys.postsList: this.postsList,
-      UserKeys.pictureUrl: this.pictureUrl,
     };
   }
 
@@ -48,26 +59,29 @@ class UserEntry {
     return UserEntry(
       name: document[UserKeys.name],
       handle: document[UserKeys.handle],
+      bio: document[UserKeys.bio],
+      dpUrl: document[UserKeys.dpUrl],
       requesters: document[UserKeys.requesters].cast<String>(),
+      followingList: document[UserKeys.followingList].cast<String>(),
       friendsList: document[UserKeys.friendsList].cast<String>(),
       groupsList: document[UserKeys.groupsList].cast<String>(),
       postsList: document[UserKeys.postsList].cast<String>(),
-      pictureUrl: document[UserKeys.pictureUrl],
     );
   }
 
-  factory UserEntry.fromDetails({String name, String handle}) {
+  factory UserEntry.fromDetails({String name, String handle, String dpUrl, String bio}) {
     return UserEntry(
       name: name,
       handle: handle,
+      bio: bio ?? "An enigma",
+      dpUrl: dpUrl,
       requesters: <String>[],
+      followingList: <String>[],
       friendsList: <String>[],
       groupsList: <String>[],
       postsList: <String>[],
-      pictureUrl: null,
     );
   }
-
 }
 
 

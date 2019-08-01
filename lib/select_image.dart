@@ -3,19 +3,10 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
-import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:image_picker/image_picker.dart';
 
-import 'package:boots/database_helper.dart';
 import 'package:boots/posts/create_post.dart';
 
-class PictureBloc extends StatesRebuilder {
-  File picture;
-  void setPicture(File picture) {
-    this.picture = picture;
-    rebuildStates();
-  }
-}
 
 void openCamera(BuildContext context) async {
   File picture = await ImagePicker.pickImage(

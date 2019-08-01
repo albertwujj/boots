@@ -11,7 +11,7 @@ import 'package:boots/backend/users.dart';
 Widget postsWidgetFromEntry(dynamic postEntry) {
   Widget ret = InstaPost(
     postBody: postEntry.body ?? "",
-    postPictureUrl: postEntry.pictureUrl,
+    postPictureUrl: postEntry.dpUrl,
   );
   return ret;
 }
@@ -28,14 +28,15 @@ Future<List<dynamic>> toPostEntriesList(List<String> postIds) async {
 }
 
 Future<List<dynamic>> postsPageRequest ({int page, int pageSize}) async {
-  DocumentReference signedInRef = await BootsAuth.instance.signedInRef;
+  DocumentReference signedInRef = BootsAuth.instance.signedInRef;
   DocumentSnapshot signedInSnap = await signedInRef.get();
   if (!signedInSnap.exists) {
     print('postsPageRequest - signedInRef does not have entry');
     return [];
   }
   UserEntry signedInEntry = UserEntry.fromDocSnap(signedInSnap);
-  List<String> friendHandles = signedInEntry.friendsList;
+  List<String> friendHandles = signedInEntry.followingList;
+  print('requesting post from friends $friendHandles');
   List<DocumentSnapshot> friendSnaps = await findUserSnaps(handles: friendHandles);
   List<UserEntry> friendEntries = friendSnaps.map((docSnap) => UserEntry.fromDocSnap(docSnap)).toList();
   List<String> postIds = [];
@@ -45,3 +46,5 @@ Future<List<dynamic>> postsPageRequest ({int page, int pageSize}) async {
   List<dynamic> posts = await toPostEntriesList(signedInEntry.postsList);
   return posts.sublist(page*pageSize + 0, min(page*pageSize + pageSize, posts.length));
 }
+
+

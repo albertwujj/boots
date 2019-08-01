@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 
 import 'package:boots/main.dart';
-import 'package:boots/database_helper.dart';
 import 'package:boots/ui_helpers/pictures.dart';
 
 
@@ -29,17 +28,7 @@ class InstaPost extends StatelessWidget {
               children: <Widget>[
                 Row(
                   children: <Widget>[
-                    new Container(
-                      height: 40.0,
-                      width: 40.0,
-                      decoration: new BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: new DecorationImage(
-                            fit: BoxFit.fill,
-                            image: new NetworkImage(
-                                "https://pbs.twimg.com/profile_images/916384996092448768/PF1TSFOE_400x400.jpg")),
-                      ),
-                    ),
+                    circleProfile(),
                     new SizedBox(
                       width: 10.0,
                     ),
@@ -62,7 +51,7 @@ class InstaPost extends StatelessWidget {
           ),
           this.postPictureUrl == null ? emptyWidget: Flexible(
             fit: FlexFit.loose,
-            child: containerImage(pictureUrl: this.postPictureUrl),
+            child: Image.network(this.postPictureUrl),
           ),
           Padding(
             padding: const EdgeInsets.all(16.0),

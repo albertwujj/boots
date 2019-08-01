@@ -15,13 +15,12 @@ import 'package:boots/backend/users.dart';
 import 'package:boots/backend/groups.dart';
 
 
-
 Future<List<UserEntry>> loadFriendsEntries() async {
   DocumentReference signedInRef = await BootsAuth.instance.signedInRef;
   DocumentSnapshot signedInSnap = await signedInRef.get();
   print('signedinSnap $signedInSnap');
   UserEntry entry = UserEntry.fromDocSnap(signedInSnap);
-  List<String> friendHandles = entry.friendsList;
+  List<String> friendHandles = entry.followingList;
   print('friendListSize ${friendHandles.length}');
   List<DocumentSnapshot> friendsSnaps = await findUserSnaps(handles: friendHandles);
   friendsSnaps.sort((a, b) => a[UserKeys.handle].compareTo(b[UserKeys.handle])); // sort alphabetically
@@ -29,7 +28,6 @@ Future<List<UserEntry>> loadFriendsEntries() async {
   print('friend entries length ${friendEntries.length}');
   return friendEntries;
 }
-
 
 class FriendsScaffold extends StatefulWidget {
   @override
@@ -63,7 +61,7 @@ class FriendsScaffoldState extends State<FriendsScaffold> {
     Widget widgetFromEntry({UserEntry friendEntry}) {
       String friendName = friendEntry.name;
       String friendHandle = friendEntry.handle;
-      String friendPictureUrl = friendEntry.pictureUrl;
+      String friendPictureUrl = friendEntry.dpUrl;
 
       return GestureDetector(
         onTap: () async {

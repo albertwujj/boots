@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 
 import 'package:boots/backend/users.dart';
 import 'package:boots/backend/classes.dart';
@@ -34,7 +33,7 @@ Future<DocumentSnapshot> findDMGroup({List<String> groupsList, String handle1, S
 
 Future<DocumentSnapshot> findDMGroupFriend({String friendHandle}) async {
   UserEntry friendEntry = UserEntry.fromDocSnap((await findUserSnaps(handles: [friendHandle]))[0]);
-  UserEntry signedInEntry = await BootsAuth.instance.getSignedInEntry();
+  UserEntry signedInEntry = BootsAuth.instance.signedInEntry;
   String signedInHandle = signedInEntry.handle;
   List<String> friendGroupsList = friendEntry.groupsList;
   return findDMGroup(groupsList: friendGroupsList, handle1: signedInHandle, handle2: friendHandle);
@@ -43,7 +42,7 @@ Future<DocumentSnapshot> findDMGroupFriend({String friendHandle}) async {
 
 
 Future<DocumentSnapshot> findDMGroupSelf({String friendHandle}) async {
-  UserEntry signedInEntry = await BootsAuth.instance.getSignedInEntry();
+  UserEntry signedInEntry = BootsAuth.instance.signedInEntry;
   String signedInHandle = signedInEntry.handle;
   List<String> signedInGroupsList = signedInEntry.groupsList;
   return findDMGroup(groupsList: signedInGroupsList, handle1: signedInHandle, handle2: friendHandle);

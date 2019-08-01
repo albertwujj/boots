@@ -3,21 +3,19 @@ import 'dart:io';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_storage/firebase_storage.dart';
-import 'package:firebase_analytics/firebase_analytics.dart';
 
 import 'package:boots/auth.dart';
 import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/storage.dart';
 
 
-final analytics = new FirebaseAnalytics();
 var currentUserEmail;
 
 
 void performSendMessage({CollectionReference messagesCollection, String messageText, File imageFile}) async {
 
 
-  UserEntry senderEntry = await BootsAuth.instance.getSignedInEntry();
+  UserEntry senderEntry = BootsAuth.instance.signedInEntry;
 
   if (imageFile == null) {
     sendMessage(messagesCollection: messagesCollection, messageText: messageText, imageUrl: null,
@@ -36,8 +34,7 @@ void sendMessage({CollectionReference messagesCollection, String messageText, St
     'email': currentUserEmail,
     'imageUrl': imageUrl,
     'senderName': senderEntry.handle,
-    'senderPhotoUrl': senderEntry.pictureUrl,
+    'senderPhotoUrl': senderEntry.dpUrl,
   });
-  analytics.logEvent(name: 'send_message');
 }
 

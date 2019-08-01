@@ -32,22 +32,27 @@ class SearchFriendBloc extends StatesRebuilder {
     UserEntry friendEntry = UserEntry.fromDocSnap(friendSnap);
     String friendHandle = friendEntry.handle;
 
-    UserEntry signedInEntry = await BootsAuth.instance.getSignedInEntry();
+    UserEntry signedInEntry = BootsAuth.instance.signedInEntry;
     String signedInHandle = signedInEntry.handle;
 
     Map<String, dynamic> signedInUpdate = {
-      UserKeys.friendsList: signedInEntry.friendsList + [friendHandle]
+      UserKeys.followingList: signedInEntry.followingList + [friendHandle]
     };
+    Map<String, dynamic> friendUpdate = {};
+
     String addedGroupId;
-    if (friendEntry.friendsList.contains(signedInHandle)) {
+    if (friendEntry.followingList.contains(signedInHandle)) {
       DocumentSnapshot groupSnap = await findDMGroupFriend(friendHandle: friendHandle);
       addedGroupId = groupSnap.documentID;
-
+      signedInUpdate[UserKeys.friendsList] = signedInEntry.friendsList + [friendHandle];
+      friendUpdate[UserKeys.friendsList] = friendEntry.friendsList + [signedInHandle];
     } else {
       addedGroupId  = await createGroup(userHandles: [signedInHandle, friendHandle]);
     }
     signedInUpdate[UserKeys.groupsList] = signedInEntry.groupsList + [addedGroupId];
 
+    await BootsAuth.instance.signedInRef.updateData(signedInUpdate);
+    await friendSnap.reference.updateData(friendUpdate);
   }
 }
 
@@ -103,7 +108,7 @@ class FriendsSearchDelegate extends SearchDelegate {
 
             UserEntry userEntry = this.bloc.getFriendEntry(index: i);
             String handle = userEntry.handle;
-            String pictureUrl = userEntry.pictureUrl;
+            String pictureUrl = userEntry.dpUrl;
             String name = userEntry.name;
 
             return GestureDetector(
