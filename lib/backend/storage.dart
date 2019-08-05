@@ -6,6 +6,9 @@ import 'package:firebase_storage/firebase_storage.dart';
 
 
 Future<String> uploadImage(File imageFile) async {
+  if (imageFile == null) {
+    return null;
+  }
   int timestamp = new DateTime.now().millisecondsSinceEpoch;
   StorageReference storageReference = FirebaseStorage
       .instance

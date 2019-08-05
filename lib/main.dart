@@ -2,16 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
 import 'package:states_rebuilder/states_rebuilder.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:boots/loading_list.dart';
 import 'package:boots/posts/get_posts.dart';
 import 'package:boots/posts/create_post.dart';
 import 'package:boots/auth.dart';
-import 'package:boots/backend/classes.dart';
 import 'package:boots/signin/login_page.dart';
 import 'package:boots/signin/register_page.dart';
 import 'package:boots/profile/profile_page.dart';
+import 'package:boots/friends/friends_list.dart';
 
 
 final Widget emptyWidget = new Container(width: 0, height: 0);
@@ -19,8 +18,6 @@ class MainBloc extends StatesRebuilder {
 }
 
 void main() async {
-  DocumentReference uche = Firestore.instance.collection('Users').document('Uche');
-  uche.setData(UserEntry.fromDetails(name: 'Uche', handle: 'uchekl').toDict());
   runApp(BootsApp());
 }
 
@@ -121,7 +118,7 @@ class _MainPageState extends State<MainPage> {
                 }
               ),
             ),
-            BootsDetails(),
+            FriendsScaffold(),
             ProfilePage(),
           ],
           /// Specify the page controller

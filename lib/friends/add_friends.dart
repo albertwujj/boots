@@ -9,6 +9,7 @@ import 'package:boots/ui_helpers/pictures.dart';
 import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/groups.dart';
 import 'package:boots/backend/users.dart';
+import 'package:boots/profile/profile_page.dart';
 
 
 class SearchFriendBloc extends StatesRebuilder {
@@ -113,8 +114,10 @@ class FriendsSearchDelegate extends SearchDelegate {
 
             return GestureDetector(
               onTap: () {
-                this.bloc.addFriend(index: i);
-                this.close(context, null);
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ProfilePage(userEntry: userEntry)),
+                );
               },
               child: ListTile(
                 leading: Container(
@@ -124,6 +127,14 @@ class FriendsSearchDelegate extends SearchDelegate {
                 ),
                 title: Text(name),
                 subtitle: Text(handle),
+                //TODO: UI - Change to Flat Button
+                trailing: FlatButton(
+                  child: Text('Follow'),
+                  onPressed: () async {
+                    await this.bloc.addFriend(index: i);
+                    this.close(context, null);
+                  },
+                ),
               ),
             );
           },

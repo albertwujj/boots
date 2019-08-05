@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -8,24 +7,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:boots/posts/create_post.dart';
 
 
-void openCamera(BuildContext context) async {
-  File picture = await ImagePicker.pickImage(
-    source: ImageSource.camera,
-  );
-  NewPostPicture.picture = picture;
-  Navigator.pop(context);
-}
-
-void openGallery(BuildContext context) async{
-
-  File picture = await ImagePicker.pickImage(
-    source: ImageSource.gallery,
-  );
-  NewPostPicture.picture = picture;
-  Navigator.pop(context);
-}
-
-Future<void> optionsDialogBox(BuildContext context) async {
+Future<void> selectPhoto({BuildContext context, var uponOpenImageSource}) async {
   await showDialog(context: context,
     builder: (BuildContext context) {
       return AlertDialog(
@@ -34,20 +16,19 @@ Future<void> optionsDialogBox(BuildContext context) async {
             children: <Widget>[
               GestureDetector(
                 child: new Text('Take a picture'),
-                onTap: () => openCamera(context),
+                onTap: () => uponOpenImageSource(context, ImageSource.camera),
               ),
               Padding(
                 padding: EdgeInsets.all(8.0),
               ),
               GestureDetector(
                 child: new Text('Select from gallery'),
-                onTap: () => openGallery(context),
+                onTap: () => uponOpenImageSource(context, ImageSource.gallery),
               ),
               ],
-              ),
             ),
-        );
-      }
-    );
+          ),
+      );
+    }
+  );
 }
-

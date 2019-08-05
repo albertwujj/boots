@@ -8,10 +8,10 @@ import 'package:boots/backend/classes.dart';
 import 'package:boots/posts/insta_post.dart';
 import 'package:boots/backend/users.dart';
 
-Widget postsWidgetFromEntry(dynamic postEntry) {
+Widget postsWidgetFromEntry(PostEntry postEntry) {
   Widget ret = InstaPost(
     postBody: postEntry.body ?? "",
-    postPictureUrl: postEntry.dpUrl,
+    postPictureUrl: postEntry.pictureUrl,
   );
   return ret;
 }

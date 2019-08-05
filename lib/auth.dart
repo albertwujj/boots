@@ -1,16 +1,11 @@
 import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:states_rebuilder/states_rebuilder.dart';
 
-import 'package:boots/signin/register_page.dart';
 import 'package:boots/backend/classes.dart';
-import 'package:boots/backend/users.dart';
 
 
 class SignInMethods {
@@ -52,13 +47,15 @@ class BootsAuth {
     print('BootsAuth googleSignIn');
     //google signin
     GoogleSignInAccount googleUser = googleLoginHandler.currentUser;
+    try {
+      googleUser = await googleLoginHandler.signInSilently();
+      print('signinsilently');
+      googleUser = await googleLoginHandler.signIn();
+    } catch (e) {
+      print('Google login exception $e');
+    }
     while (googleUser == null) {
-      try {
-        googleUser = await googleLoginHandler.signInSilently();
-        googleUser = await googleLoginHandler.signIn();
-      } catch (e) {
-        print('Google login exception $e');
-      }
+
     }
 
     //firebase signin

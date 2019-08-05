@@ -12,7 +12,10 @@ import 'package:boots/backend/classes.dart';
 import 'package:boots/auth.dart';
 import 'package:boots/backend/storage.dart';
 import 'package:boots/ui_helpers/pictures.dart';
+import 'package:boots/select_photo.dart';
 
+
+/// email to BootsDetails - need to register
 
 Widget padded(Widget child, {double amount: 8.0}) {
   return new Padding(
@@ -47,8 +50,8 @@ class AuthConnectState extends State<AuthConnect> {
   void validateAndSubmit(BuildContext context) async {
     if (validateAndSave()) {
       try {
-        await BootsAuth.instance.emailRegister(email: this._email, password: this._password);
-        Navigator.push(context, MaterialPageRoute(builder: (context) => BootsDetails()));
+        var addUser = () async => await BootsAuth.instance.emailRegister(email: this._email, password: this._password);
+        Navigator.push(context, MaterialPageRoute(builder: (context) => BootsDetails(addUser: addUser,)));
       }
       catch (e) {
         print('add user exception');
@@ -66,6 +69,7 @@ class AuthConnectState extends State<AuthConnect> {
       onSaved: (val) => _email = val,
     );
   }
+
   Widget passwordTextField() {
     return TextFormField(
       key: new Key('password'),
@@ -106,7 +110,7 @@ class AuthConnectState extends State<AuthConnect> {
                     children: [
                       emailTextField(),
                       passwordTextField(),
-                      formSubmitButton(context),
+                      padded(formSubmitButton(context)),
                     ],
                   ),
                 ),
@@ -144,18 +148,54 @@ class BootsDetails extends StatefulWidget {
 
   @override
   State<StatefulWidget> createState() {
-    return BootsDetailsState();
+    return BootsDetailsState(addUser: this.addUser);
   }
 }
 
 class BootsDetailsState extends State<BootsDetails> {
-
   BuildContext context;
   static final formKey = new GlobalKey<FormState>();
   String _name;
   String _handle;
   File _picture;
+  var addUser;
+  BootsDetailsState({
+    this.addUser,
+  });
 
+  /// PICTURE SELECTION
+  void uponOpenImageSource(BuildContext context, ImageSource imageSource) async {
+    Navigator.pop(context);
+    File pictureFile = await ImagePicker.pickImage(source: imageSource);
+    pictureFile = await ImageCropper.cropImage(sourcePath: pictureFile.path);
+    setState(() {
+      _picture = pictureFile;
+    });
+  }
+
+  /// SUBMIT FORM
+  void validateAndSubmit(BuildContext context) async {
+    if (validateAndSave()) {
+      try {
+        await this.addUser();
+        String dpUrl = await uploadImage(_picture);
+        BootsAuth.instance.signedInRef.setData(
+            UserEntry.fromDetails(name: _name, handle: _handle, location: _location, dpUrl: dpUrl)
+                .toDict());
+        BootsAuth.instance.signedInSnap = await BootsAuth.instance.signedInRef.get();
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setBool('HasReg', true);
+        Navigator.pushNamedAndRemoveUntil(
+            context, 'home', (Route<dynamic> route) => false);
+      }
+      catch (e) {
+        print('submit exception');
+        print(e);
+      }
+    }
+  }
+
+  /// FORM FIELDS
   Widget wrapTextField(Widget textField, {String name}) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -179,27 +219,6 @@ class BootsDetailsState extends State<BootsDetails> {
       return true;
     }
     return false;
-  }
-
-  void validateAndSubmit(BuildContext context) async {
-    if (validateAndSave()) {
-      try {
-        String dpUrl = await uploadImage(_picture);
-        BootsAuth.instance.signedInRef.setData(
-            UserEntry.fromDetails(name: _name, handle: _handle, dpUrl: dpUrl)
-                .toDict());
-        BootsAuth.instance.signedInSnap =
-        await BootsAuth.instance.signedInRef.get();
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setBool('HasReg', true);
-        Navigator.pushNamedAndRemoveUntil(
-            context, 'home', (Route<dynamic> route) => false);
-      }
-      catch (e) {
-        print('submit exception');
-        print(e);
-      }
-    }
   }
 
   Widget nameTextField() {
@@ -233,72 +252,55 @@ class BootsDetailsState extends State<BootsDetails> {
     );
   }
 
-  void openCamera(BuildContext context) async {
-    Navigator.pop(context);
-    File pictureFile = await ImagePicker.pickImage(
-      source: ImageSource.camera,
-    );
-    pictureFile = await ImageCropper.cropImage(sourcePath: pictureFile.path);
-    setState(() {
-      _picture = pictureFile;
-    });
-  }
 
-  void openGallery(BuildContext context) async{
-    Navigator.pop(context);
-    File pictureFile = await ImagePicker.pickImage(
-      source: ImageSource.gallery,
-    );
-    pictureFile = await ImageCropper.cropImage(sourcePath: pictureFile.path);
-    setState(() {
-      _picture = pictureFile;
-    });
-  }
-
-  Future<void> changeProfilePhoto(BuildContext context) async {
-    await showDialog(context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: new SingleChildScrollView(
-            child: new ListBody(
-              children: <Widget>[
-                GestureDetector(
-                  child: new Text('Take a picture'),
-                  onTap: () => openCamera(context),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                GestureDetector(
-                  child: new Text('Select from gallery'),
-                  onTap: () {
-                    openGallery(context);
-                  },
-                ),
-                ],
-              ),
-            ),
-        );
-      }
-    );
-  }
-
+  /// USER INTERFACE
   Widget profilePhoto() {
     return fileCircleProfile(file: _picture);
   }
 
-  Widget profilePhotoButton(BuildContext context) {
+  Widget chooseProfilePhoto(BuildContext context) {
     return FlatButton(
-      onPressed: () {
-        changeProfilePhoto(context);
-      },
+      onPressed: () => selectPhoto(context: context, uponOpenImageSource: uponOpenImageSource),
       child: Text(
         "Change Photo",
         style: const TextStyle(
-          color: Colors.blue,
+          color: Colors.lightGreen,
           fontSize: 20.0,
           fontWeight: FontWeight.bold
         ),
+      )
+    );
+  }
+
+  // LOCATION
+  String _location = 'Lagos';
+  List<String> states = ['Abia', 'Adamawa', 'Akwa Ibom', 'Anambra', 'Bauchi', 'Bayelsa', 'Benue', 'Borno', 'Cross River', 'Delta', 'Ebonyi', 'Enugu', 'Edo', 'Ekiti', 'Gombe', 'Imo', 'Jigawa', 'Kaduna', 'Kano', 'Katsina', 'Kebbi', 'Kogi', 'Kwara', 'Lagos', 'Nasarawa', 'Niger', 'Ogun', 'Ondo', 'Osun', 'Oyo', 'Plateau', 'Rivers', 'Sokoto', 'Taraba', 'Yobe', 'Zamfar'];
+  Widget locationDropDownButton() {
+    return DropdownButton<String>(
+      value: _location,
+      onChanged: (String newValue) {
+        setState(() {
+          _location = newValue;
+        });
+      },
+      items: states
+          .map<DropdownMenuItem<String>>((String value) {
+        return DropdownMenuItem<String>(
+          value: value,
+          child: Text(value),
+        );
+      })
+          .toList(),
+    );
+  }
+  Widget selectLocation() {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Column(
+        children:[
+          Text('Service Location'),
+          locationDropDownButton()
+        ],
       )
     );
   }
@@ -320,9 +322,10 @@ class BootsDetailsState extends State<BootsDetails> {
                       crossAxisAlignment: CrossAxisAlignment.center,
                       children: [
                         profilePhoto(),
-                        profilePhotoButton(context),
+                        chooseProfilePhoto(context),
                         wrapTextField(nameTextField(), name:'Display Name'),
                         padded(handleTextField()),
+                        padded(selectLocation(), amount:20.0),
                         padded(formSubmitButton(context), amount: 15.0),
                       ]
                   )

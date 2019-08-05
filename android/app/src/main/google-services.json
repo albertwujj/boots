@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "792563008293",
+    "firebase_url": "https://boots1984.firebaseio.com",
+    "project_id": "boots1984",
+    "storage_bucket": "boots1984.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:792563008293:android:df5aa70373824235",
+        "android_client_info": {
+          "package_name": "com.boots.bootsapp"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "792563008293-raab9dcv257t070jn7c7olahocisgvob.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvJhL70oU7ZGwOzO3YqhfHgRogmfh22r8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "792563008293-raab9dcv257t070jn7c7olahocisgvob.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "792563008293-o45q3m193pkkk6kcajndo95rtdk2m86n.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.boots.boots"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

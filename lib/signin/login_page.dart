@@ -43,17 +43,18 @@ class LoginPageState extends State<LoginPage> {
     if (validateAndSave()) {
       try {
         String uid = await BootsAuth.instance.emailLogin(email: this._email, password: this._password);
-        print('logged in with uid: $uid');
+        Navigator.pushNamed(context, 'home');
       }
       catch (e) {
         //TODO: handle email login exception
-        print('email login exception');
+        //ERROR_USER_NOT_FOUND
+        print('email login exception, not allowing submit');
+
         print(e);
       }
-      Navigator.pushNamed(context, 'home');
+
     }
   }
-
 
   Widget emailTextField() {
     return padded(child: new TextFormField(
@@ -64,7 +65,6 @@ class LoginPageState extends State<LoginPage> {
       onSaved: (val) => _email = val,
     ));
   }
-
 
   Widget passwordTextField() {
     return padded(child: new TextFormField(
@@ -124,9 +124,8 @@ class LoginPageState extends State<LoginPage> {
                     Navigator.pushNamed(context, 'home');
                   } else {
                     Navigator.push(context, MaterialPageRoute(builder:
-                        (context) => BootsDetails()));
+                        (context) => BootsDetails(addUser: () async {})));
                   }
-
                 }),
               ]),
               PrimaryButton(

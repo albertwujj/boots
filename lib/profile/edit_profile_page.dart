@@ -2,13 +2,14 @@ import 'dart:io';
 import 'package:flutter/widgets.dart';
 import 'package:flutter/material.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 import 'package:boots/auth.dart';
 import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/storage.dart';
 import 'package:boots/ui_helpers/pictures.dart';
+import 'package:boots/select_photo.dart';
 
 
 class EditProfilePage extends StatefulWidget {
@@ -24,6 +25,15 @@ class EditProfilePageState extends State<EditProfilePage> {
 
   File _picture;
 
+  void uponOpenImageSource(BuildContext context, ImageSource imageSource) async {
+    Navigator.pop(context);
+    File picture = await ImagePicker.pickImage(source: imageSource);
+    picture = await ImageCropper.cropImage(sourcePath: picture.path);
+    setState(() {
+      _picture = picture;
+    });
+  }
+
   applyChanges() async {
     await BootsAuth.instance.signedInRef.updateData({
       UserKeys.name: nameController.text,
@@ -37,48 +47,7 @@ class EditProfilePageState extends State<EditProfilePage> {
     BootsAuth.instance.signedInSnap = await BootsAuth.instance.signedInRef.get();
   }
 
-  void openCamera(BuildContext context) async {
-    _picture = await ImagePicker.pickImage(
-      source: ImageSource.camera,
-    );
-    Navigator.pop(context);
 
-  }
-
-  void openGallery(BuildContext context) async{
-    _picture = await ImagePicker.pickImage(
-      source: ImageSource.gallery,
-    );
-    Navigator.pop(context);
-  }
-
-  Future<void> changeProfilePhoto(BuildContext context) async {
-    await showDialog(context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: new SingleChildScrollView(
-            child: new ListBody(
-              children: <Widget>[
-                GestureDetector(
-                  child: new Text('Take a picture'),
-                  onTap: () => openCamera(context),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                GestureDetector(
-                  child: new Text('Select from gallery'),
-                  onTap: () {
-                    openGallery(context);
-                  },
-                ),
-                ],
-              ),
-            ),
-        );
-      }
-    );
-  }
 
   Widget buildTextField({String name, TextEditingController controller}) {
     return Column(
@@ -126,9 +95,7 @@ class EditProfilePageState extends State<EditProfilePage> {
           child: dpPhoto(),
         ),
         FlatButton(
-            onPressed: () {
-              changeProfilePhoto(context);
-            },
+            onPressed: () => selectPhoto(context: context, uponOpenImageSource: uponOpenImageSource),
             child: Text(
               "Change Photo",
               style: const TextStyle(

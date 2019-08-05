@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 
@@ -8,7 +7,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:boots/ui_helpers/pictures.dart';
 import 'package:boots/messages/message_screen.dart';
 import 'package:boots/friends/add_friends.dart';
-import 'package:boots/loading_list.dart';
 import 'package:boots/auth.dart';
 import 'package:boots/backend/classes.dart';
 import 'package:boots/backend/users.dart';
@@ -55,33 +53,33 @@ class FriendsScaffoldState extends State<FriendsScaffold> {
     });
   }
 
+  Widget widgetFromEntry({UserEntry friendEntry}) {
+    String friendName = friendEntry.name;
+    String friendHandle = friendEntry.handle;
+    String friendPictureUrl = friendEntry.dpUrl;
+
+    return GestureDetector(
+      onTap: () async {
+        CollectionReference messages = (await findDMGroupSelf(friendHandle: friendHandle)).reference.collection(GroupKeys.messages);
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => ChatScreen(messagesCollection: messages, groupName: friendName)),
+        );
+      },
+      child: ListTile(
+        leading: Container(
+          child: circleProfile(pictureUrl: friendPictureUrl),
+          width: 75,
+          height: 75,
+        ),
+        title: Text(friendName),
+        subtitle: Text(friendHandle),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-
-    Widget widgetFromEntry({UserEntry friendEntry}) {
-      String friendName = friendEntry.name;
-      String friendHandle = friendEntry.handle;
-      String friendPictureUrl = friendEntry.dpUrl;
-
-      return GestureDetector(
-        onTap: () async {
-          CollectionReference messages = (await findDMGroupSelf(friendHandle: friendHandle)).reference.collection(GroupKeys.messages);
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => ChatScreen(messagesCollection: messages, groupName: friendName)),
-          );
-        },
-        child: ListTile(
-          leading: Container(
-            child: circleProfile(pictureUrl: friendPictureUrl),
-            width: 75,
-            height: 75,
-          ),
-          title: Text(friendName),
-          subtitle: Text(friendHandle),
-        ),
-      );
-    }
 
     return Stack(children: <Widget>[
       Align(alignment: Alignment.center,

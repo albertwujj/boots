@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 class UserKeys {
   static final name = "name";
   static final handle = "handle";
+  static final location = "location";
   static final bio = "bio";
   static final dpUrl = "pictureUrl";
   static final requesters = "requesters";
@@ -10,14 +11,13 @@ class UserKeys {
   static final friendsList = "friendsList";
   static final groupsList = "groupList";
   static final postsList = "postsList";
-
-
 }
 
 
 class UserEntry {
   final String name;
   final String handle;
+  final String location;
   final String bio;
   final String dpUrl;
   final List<String> requesters;
@@ -31,6 +31,7 @@ class UserEntry {
       {
         this.name,
         this.handle,
+        this.location,
         this.bio,
         this.dpUrl,
         this.requesters,
@@ -44,6 +45,7 @@ class UserEntry {
     return {
       UserKeys.name: this.name,
       UserKeys.handle: this.handle,
+      UserKeys.location: this.location,
       UserKeys.bio: this.bio,
       UserKeys.dpUrl: this.dpUrl,
       UserKeys.requesters: this.requesters,
@@ -59,6 +61,7 @@ class UserEntry {
     return UserEntry(
       name: document[UserKeys.name],
       handle: document[UserKeys.handle],
+      location: document[UserKeys.location],
       bio: document[UserKeys.bio],
       dpUrl: document[UserKeys.dpUrl],
       requesters: document[UserKeys.requesters].cast<String>(),
@@ -69,10 +72,11 @@ class UserEntry {
     );
   }
 
-  factory UserEntry.fromDetails({String name, String handle, String dpUrl, String bio}) {
+  factory UserEntry.fromDetails({String name, String handle, String location, String dpUrl, String bio}) {
     return UserEntry(
       name: name,
       handle: handle,
+      location: location,
       bio: bio ?? "An enigma",
       dpUrl: dpUrl,
       requesters: <String>[],

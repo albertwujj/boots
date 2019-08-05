@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
@@ -6,10 +5,12 @@ import 'package:flutter/services.dart';
 
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:image_cropper/image_cropper.dart';
 
 import 'package:boots/backend/classes.dart';
 import 'package:boots/auth.dart';
 import 'package:boots/backend/storage.dart';
+import 'package:boots/select_photo.dart';
 
 
 class NewPostPicture {
@@ -33,13 +34,15 @@ class CreatePostState extends State<CreatePost> {
   String _pictureUrl;
   bool _clickable = true;
 
-  void openCamera(BuildContext context) async {
+
+  void uponOpenImageSource(BuildContext context, ImageSource imageSource) async {
     setState(() {
       _uploading = true;
     });
     File picture = await ImagePicker.pickImage(
-      source: ImageSource.camera,
+      source: imageSource,
     );
+    picture = await ImageCropper.cropImage(sourcePath: picture.path);
     Navigator.pop(context);
     String pictureUrl = await uploadImage(picture);
     setState(() {
@@ -48,48 +51,22 @@ class CreatePostState extends State<CreatePost> {
     });
   }
 
-  void openGallery(BuildContext context) async{
-    setState(() {
-      _uploading = true;
+  void submitPost() async {
+    print('submitPost');
+    setState((){
+      _clickable = false;
     });
-    File picture = await ImagePicker.pickImage(
-      source: ImageSource.gallery,
-    );
-    Navigator.pop(context);
-    String pictureUrl = await uploadImage(picture);
-    setState(() {
-      _pictureUrl = pictureUrl;
-      _uploading = false;
+    String body = textController.text ?? "";
+    PostEntry postEntry = PostEntry(pictureUrl: _pictureUrl, body: body, likes: 0);
+    DocumentReference postRef = await Firestore.instance.collection('Posts').add(postEntry.toDict());
+
+    await BootsAuth.instance.signedInRef.updateData({
+      UserKeys.postsList: (BootsAuth.instance.signedInSnap)[UserKeys.postsList] + [postRef.documentID],
     });
+    BootsAuth.instance.signedInSnap = await BootsAuth.instance.signedInRef.get();
+    Navigator.pop(this.context);
   }
 
-  Future<void> optionsDialogBox(BuildContext context) async {
-    await showDialog(context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          content: new SingleChildScrollView(
-            child: new ListBody(
-              children: <Widget>[
-                GestureDetector(
-                  child: new Text('Take a picture'),
-                  onTap: () => openCamera(context),
-                ),
-                Padding(
-                  padding: EdgeInsets.all(8.0),
-                ),
-                GestureDetector(
-                  child: new Text('Select from gallery'),
-                  onTap: () {
-                    openGallery(context);
-                  },
-                ),
-                ],
-              ),
-            ),
-        );
-      }
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -113,7 +90,7 @@ class CreatePostState extends State<CreatePost> {
             disabledTextColor: Colors.black,
             padding: EdgeInsets.all(8.0),
             splashColor: Colors.blueAccent,
-            onPressed: () => optionsDialogBox(context),
+            onPressed: () => selectPhoto(context: context, uponOpenImageSource: uponOpenImageSource),
             child: uploadButton,
           ),
           SizedBox(height: 60),
@@ -147,21 +124,5 @@ class CreatePostState extends State<CreatePost> {
       ]
       )
     );
-  }
-
-  void submitPost() async {
-    print('submitPost');
-    setState((){
-      _clickable = false;
-    });
-    String body = textController.text ?? "";
-    PostEntry postEntry = PostEntry(pictureUrl: _pictureUrl, body: body, likes: 0);
-    DocumentReference postRef = await Firestore.instance.collection('Posts').add(postEntry.toDict());
-
-    await BootsAuth.instance.signedInRef.updateData({
-      UserKeys.postsList: (BootsAuth.instance.signedInSnap)[UserKeys.postsList] + [postRef.documentID],
-    });
-    BootsAuth.instance.signedInSnap = await BootsAuth.instance.signedInRef.get();
-    Navigator.pop(this.context);
   }
 }
