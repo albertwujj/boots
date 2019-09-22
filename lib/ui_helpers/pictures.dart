@@ -1,8 +1,4 @@
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
-
-import 'package:boots/auth.dart';
+import 'package:boots/common_imports.dart';
 
 
 Widget circleProfile({String pictureUrl, double radius: 50.0}) {

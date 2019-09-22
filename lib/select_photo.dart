@@ -1,10 +1,6 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:boots/common_imports.dart';
 
 import 'package:image_picker/image_picker.dart';
-
-import 'package:boots/posts/create_post.dart';
 
 
 Future<void> selectPhoto({BuildContext context, var uponOpenImageSource}) async {

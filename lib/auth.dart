@@ -1,34 +1,71 @@
-import 'dart:async';
+import 'package:boots/common_imports.dart';
+
+import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:google_sign_in/google_sign_in.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-
-import 'package:boots/backend/classes.dart';
 
 
-class SignInMethods {
-  static final String google = 'google';
-}
 
 class BootsAuth {
-
   static final BootsAuth instance = BootsAuth();
-  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-  final googleLoginHandler = new GoogleSignIn();
-  static UserEntry registeringEntry;
+  static final _firebaseAuth = FirebaseAuth.instance;
+
+
+
+}
+
+class UIDSharedPreferences {
+  SharedPreferences _sharedPreferences;
+  UIDSharedPreferences() {
+    SharedPreferences.getInstance().then((sp) {
+      _sharedPreferences = sp;
+    });
+  }
+
+  void UIDexists(){
+    if UIDexists
+  }
+
+}
+
+final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
+
+class CreateOrLoginBloc extends StatesRebuilder {
+  Future<bool> checkSavedLogin() async {
+    ///TODO: Fill out function
+    SharedPreferences sharedPreferences = await BootsAuth.getSharedPreferences();
+
+  }
+
+}
+
+class RegisterBloc {
+
+}
+
+class BootsAutsh {
+
+
+  final googleLoginHandler = new GoogleSignIn.standard();
   DocumentReference signedInRef;
   DocumentSnapshot signedInSnap;
+
   UserEntry get signedInEntry {
     return UserEntry.fromDocSnap(signedInSnap);
   }
+  Future<void> updateSnap() async {
+    this.signedInSnap = await this.signedInRef.get();
+  }
 
-  Future<String> isLoggedIn() async {
+  Future<bool> attemptSavedSignIn() async {
     final prefs = await SharedPreferences.getInstance();
-    String signInUid = prefs.getString('SignInUid');
-    print('isLoggedIn with uid $signInUid');
-    return signInUid;
+    String savedUid = prefs.getString('SignInUid');
+    if (savedUid == null) {
+      return false;
+    }
+    await bootsLogin(savedUid);
+    return true;
   }
 
   Future<bool> hasRegisteredBefore() async {
@@ -38,7 +75,7 @@ class BootsAuth {
 
   Future<void> bootsLogin(String uid) async {
     this.signedInRef = Firestore.instance.collection('Users').document(uid);
-    this.signedInSnap = await this.signedInRef.get();
+    await updateSnap();
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('SignInUid', uid);
   }
@@ -51,35 +88,34 @@ class BootsAuth {
       googleUser = await googleLoginHandler.signInSilently();
       print('signinsilently');
       googleUser = await googleLoginHandler.signIn();
+
+      //firebase signin
+      GoogleSignInAuthentication googleAuth = await googleUser.authentication;
+      final AuthCredential credential = GoogleAuthProvider.getCredential(
+        idToken: googleAuth.idToken,
+        accessToken: googleAuth.accessToken,
+      );
+      FirebaseUser user = (await _firebaseAuth.signInWithCredential(credential)).user;
+      print('User google signed in, user id: ${user?.uid}');
+      await bootsLogin(user.uid);
+      return user.uid;
+
     } catch (e) {
       print('Google login exception $e');
     }
-    while (googleUser == null) {
 
-    }
-
-    //firebase signin
-    GoogleSignInAuthentication googleAuth = await googleUser.authentication;
-    final AuthCredential credential = GoogleAuthProvider.getCredential(
-      idToken: googleAuth.idToken,
-      accessToken: googleAuth.accessToken,
-    );
-    FirebaseUser user = await _firebaseAuth.signInWithCredential(credential);
-    print('User google signed in, user id: ${user?.uid}');
-    await bootsLogin(user.uid);
-    return user.uid;
   }
 
   Future<String> emailLogin({String email, String password}) async {
-    FirebaseUser user = await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password);
-    print('User email logged in, user id: ${user?.uid}');
+    FirebaseUser user = (await _firebaseAuth.signInWithEmailAndPassword(email: email, password: password)).user;
+    print('User logged in with email, user id: ${user?.uid}');
     await bootsLogin(user.uid);
     return user.uid;
   }
 
   Future<String> emailRegister({String email, String password}) async {
-    FirebaseUser user = await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password);
-    print('User email registered, user id: ${user?.uid}');
+    FirebaseUser user = (await _firebaseAuth.createUserWithEmailAndPassword(email: email, password: password)).user;
+    print('User registered with email, user id: ${user?.uid}');
     await bootsLogin(user.uid);
     return user.uid;
   }

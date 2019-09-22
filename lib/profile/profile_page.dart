@@ -1,8 +1,5 @@
-import 'package:flutter/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:boots/common_imports.dart';
 
-import 'package:boots/backend/classes.dart';
-import 'package:boots/auth.dart';
 import 'package:boots/profile/edit_profile_page.dart';
 
 

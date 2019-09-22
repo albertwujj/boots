@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
+import 'package:boots/common_imports.dart';
 import 'package:flutter/cupertino.dart';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:boots/ui_helpers/pictures.dart';
 

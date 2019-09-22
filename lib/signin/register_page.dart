@@ -8,7 +8,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 
 import 'package:boots/ui_helpers/primary_button.dart';
-import 'package:boots/backend/classes.dart';
+import 'package:boots/backend/users.dart';
 import 'package:boots/auth.dart';
 import 'package:boots/backend/storage.dart';
 import 'package:boots/ui_helpers/pictures.dart';

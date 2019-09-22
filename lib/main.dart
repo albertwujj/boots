@@ -1,88 +1,53 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'common_imports.dart';
 
 import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'package:boots/loading_list.dart';
 import 'package:boots/posts/get_posts.dart';
-import 'package:boots/posts/create_post.dart';
-import 'package:boots/auth.dart';
+import 'package:boots/posts/add_post.dart';
 import 'package:boots/signin/login_page.dart';
 import 'package:boots/signin/register_page.dart';
 import 'package:boots/profile/profile_page.dart';
-import 'package:boots/friends/friends_list.dart';
+import 'package:boots/testing/setup_users.dart';
 
-
-final Widget emptyWidget = new Container(width: 0, height: 0);
-class MainBloc extends StatesRebuilder {
-}
 
 void main() async {
+  await TestingSetupUsers.setupEntire();
   runApp(BootsApp());
 }
 
-class BootsApp extends StatefulWidget {
-  @override
-  State<StatefulWidget> createState() {
-    return BootsAppState();
+class BootsApp extends StatelessWidget {
+
+  Widget build(BuildContext context) {
+    return MaterialApp(
+        home: BlocProvider(
+          bloc: CreateOrLoginBloc(),
+          child: AuthPage(),
+      )
+    );
   }
 }
 
-
-class BootsAppState extends State<BootsApp> {
-
-  String route;
-
+class CreateOrLoginPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-
-    if (route == null) {
-      BootsAuth.instance.isLoggedIn().then((uid) async {
-        if (uid != null) {
-          await BootsAuth.instance.bootsLogin(uid);
-          setState(() {
-            this.route = 'home';
-          });
-        } else {
-          BootsAuth.instance.hasRegisteredBefore().then((hasReg) {
-            if (hasReg) {
-              setState(() {
-                this.route = 'login';
-              });
-            } else {
-              setState(() {
-                this.route = 'register';
-              });
-            }
-          });
-        }
-      });
-      return Container();
-    }
-    else {
-      return MaterialApp(
-        title: 'Lime',
-        initialRoute: this.route,
-        routes: {
-          'login': (context) => LoginPage(),
-          'register': (context) => AuthConnect(),
-          'home': (context) =>
-              BlocProvider(bloc: MainBloc(), child: MainPage()),
-        },
-      );
-    }
+    final bloc = BlocProvider.of<CreateOrLoginBloc>(context);
+    return StateBuilder(
+      blocs: [bloc],
+      builder: (_, __) {
+        
+      }
+    );
+    return null;
   }
 }
+
 
 class MainPage extends StatefulWidget {
   @override
   State<StatefulWidget> createState() {
     return new _MainPageState();
   }
-}
-
-enum MainPages {
-  feed, friends
 }
 
 class _MainPageState extends State<MainPage> {
@@ -118,7 +83,6 @@ class _MainPageState extends State<MainPage> {
                 }
               ),
             ),
-            FriendsScaffold(),
             ProfilePage(),
           ],
           /// Specify the page controller
@@ -133,7 +97,7 @@ class _MainPageState extends State<MainPage> {
             ),
             BottomNavigationBarItem(
                 icon: Icon(Icons.people),
-                title: Text("friends")
+                title: Text("old.friends")
             ),
             BottomNavigationBarItem(
               icon: Icon(Icons.person),
@@ -153,7 +117,6 @@ class _MainPageState extends State<MainPage> {
   /// [BottomNavigationBarItem] with corresponding
   /// page index
   void navigationTapped(int page){
-
     // Animating to the page.
     // You can use whatever duration and curve you like
     _pageController.animateToPage(

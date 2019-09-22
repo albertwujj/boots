@@ -1,13 +1,8 @@
-import 'dart:io';
-import 'package:flutter/widgets.dart';
-import 'package:flutter/material.dart';
+import 'package:boots/common_imports.dart';
 
 import 'package:image_picker/image_picker.dart';
 import 'package:image_cropper/image_cropper.dart';
 
-import 'package:boots/auth.dart';
-import 'package:boots/backend/classes.dart';
-import 'package:boots/backend/storage.dart';
 import 'package:boots/ui_helpers/pictures.dart';
 import 'package:boots/select_photo.dart';
 
@@ -46,8 +41,6 @@ class EditProfilePageState extends State<EditProfilePage> {
     }
     BootsAuth.instance.signedInSnap = await BootsAuth.instance.signedInRef.get();
   }
-
-
 
   Widget buildTextField({String name, TextEditingController controller}) {
     return Column(

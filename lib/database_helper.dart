@@ -1,11 +1,9 @@
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:boots/common_imports.dart';
 
 
 enum DatabaseTable {
   posts,
-  friends,
+  old.friends,
 }
 String _enumToTable(DatabaseTable table_enum){
   switch (table_enum) {

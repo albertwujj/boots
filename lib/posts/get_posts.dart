@@ -4,28 +4,27 @@ import 'package:flutter/widgets.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:boots/auth.dart';
-import 'package:boots/backend/classes.dart';
-import 'package:boots/posts/insta_post.dart';
 import 'package:boots/backend/users.dart';
+import 'package:boots/posts/post_widget.dart';
 
-Widget postsWidgetFromEntry(PostEntry postEntry) {
+
+Widget postsWidgetFromEntry(DocumentReference postRef) {
   Widget ret = InstaPost(
-    postBody: postEntry.body ?? "",
-    postPictureUrl: postEntry.pictureUrl,
+    postRef: postRef,
   );
   return ret;
 }
+
 
 Future<List<dynamic>> toPostEntriesList(List<String> postIds) async {
   List posts = [];
   for (String postId in postIds) {
     DocumentReference postRef = Firestore.instance.collection('Posts').document(postId);
-    DocumentSnapshot postSnap = await postRef.get();
-    PostEntry postEntry = PostEntry.fromDocSnap(postSnap);
-    posts.add(postEntry);
+    posts.add(postRef);
   }
   return posts;
 }
+
 
 Future<List<dynamic>> postsPageRequest ({int page, int pageSize}) async {
   DocumentReference signedInRef = BootsAuth.instance.signedInRef;
@@ -36,8 +35,8 @@ Future<List<dynamic>> postsPageRequest ({int page, int pageSize}) async {
   }
   UserEntry signedInEntry = UserEntry.fromDocSnap(signedInSnap);
   List<String> friendHandles = signedInEntry.followingList;
-  print('requesting post from friends $friendHandles');
-  List<DocumentSnapshot> friendSnaps = await findUserSnaps(handles: friendHandles);
+  print('requesting post from old.friends $friendHandles');
+  List<DocumentSnapshot> friendSnaps = await Users.findUserSnaps(handles: friendHandles);
   List<UserEntry> friendEntries = friendSnaps.map((docSnap) => UserEntry.fromDocSnap(docSnap)).toList();
   List<String> postIds = [];
   for (UserEntry friendEntry in friendEntries) {

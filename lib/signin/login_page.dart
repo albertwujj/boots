@@ -1,11 +1,8 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:boots/common_imports.dart';
 
 import 'package:flutter_auth_buttons/flutter_auth_buttons.dart';
 
 import 'package:boots/signin/register_page.dart';
-import 'package:boots/auth.dart';
 import 'package:boots/ui_helpers/primary_button.dart';
 
 

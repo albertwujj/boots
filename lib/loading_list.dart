@@ -1,9 +1,5 @@
-import 'dart:async';
-import 'dart:math';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:boots/common_imports.dart';
 
-import 'package:boots/backend/classes.dart';
 
 class LoadingListView extends StatefulWidget {
 

@@ -1,16 +1,9 @@
-import 'dart:async';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:boots/common_imports.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:states_rebuilder/states_rebuilder.dart';
 
 import 'package:boots/ui_helpers/pictures.dart';
 import 'package:boots/messages/message_screen.dart';
-import 'package:boots/friends/add_friends.dart';
-import 'package:boots/auth.dart';
-import 'package:boots/backend/classes.dart';
-import 'package:boots/backend/users.dart';
-import 'package:boots/backend/groups.dart';
 
 
 Future<List<UserEntry>> loadFriendsEntries() async {
@@ -20,7 +13,7 @@ Future<List<UserEntry>> loadFriendsEntries() async {
   UserEntry entry = UserEntry.fromDocSnap(signedInSnap);
   List<String> friendHandles = entry.followingList;
   print('friendListSize ${friendHandles.length}');
-  List<DocumentSnapshot> friendsSnaps = await findUserSnaps(handles: friendHandles);
+  List<DocumentSnapshot> friendsSnaps = await Users.findUserSnaps(handles: friendHandles);
   friendsSnaps.sort((a, b) => a[UserKeys.handle].compareTo(b[UserKeys.handle])); // sort alphabetically
   List<UserEntry> friendEntries = friendsSnaps.map((DocumentSnapshot docsnap) => UserEntry.fromDocSnap(docsnap)).toList();
   print('friend entries length ${friendEntries.length}');
@@ -80,7 +73,6 @@ class FriendsScaffoldState extends State<FriendsScaffold> {
 
   @override
   Widget build(BuildContext context) {
-
     return Stack(children: <Widget>[
       Align(alignment: Alignment.center,
         child: ListView.builder(

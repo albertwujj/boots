@@ -1,19 +1,10 @@
-import 'dart:async';
-import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_storage/firebase_storage.dart';
-
-import 'package:boots/auth.dart';
-import 'package:boots/backend/classes.dart';
-import 'package:boots/backend/storage.dart';
+import 'package:boots/common_imports.dart';
 
 
 var currentUserEmail;
 
 
 void performSendMessage({CollectionReference messagesCollection, String messageText, File imageFile}) async {
-
 
   UserEntry senderEntry = BootsAuth.instance.signedInEntry;
 

@@ -1,22 +1,14 @@
-import 'dart:async';
-import 'dart:io';
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:boots/common_imports.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:image_picker/image_picker.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firestore_ui/firestore_ui.dart';
 import 'package:firestore_ui/animated_firestore_list.dart';
 
-import 'package:boots/auth.dart';
 import 'package:boots/messages/message_item.dart';
-import 'package:boots/backend/messaging.dart';
 
 
 var _scaffoldContext;
-
-
 
 class ChatScreen extends StatefulWidget {
   CollectionReference messagesCollection;

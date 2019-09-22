@@ -1,16 +1,37 @@
-import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
+import 'package:boots/common_imports.dart';
 
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:states_rebuilder/states_rebuilder.dart';
 
-import 'package:boots/auth.dart';
 import 'package:boots/ui_helpers/pictures.dart';
-import 'package:boots/backend/classes.dart';
-import 'package:boots/backend/groups.dart';
-import 'package:boots/backend/users.dart';
 import 'package:boots/profile/profile_page.dart';
 
+Future<void> addFriend({DocumentSnapshot askerSnap, DocumentSnapshot targetSnap}) async {
+  
+  UserEntry askerEntry = UserEntry.fromDocSnap(askerSnap);
+  String askerHandle = askerEntry.handle;
+  
+  UserEntry targetEntry = UserEntry.fromDocSnap(targetSnap);
+  String targetHandle = targetEntry.handle;
+
+  Map<String, dynamic> signedInUpdate = {
+    UserKeys.followingList: askerEntry.followingList + [targetHandle]
+  };
+  Map<String, dynamic> friendUpdate = {};
+
+  String addedGroupId;
+  if (targetEntry.followingList.contains(askerHandle)) {
+    DocumentSnapshot groupSnap = await findDMGroupFriend(friendHandle: targetHandle);
+    addedGroupId = groupSnap.documentID;
+    signedInUpdate[UserKeys.friendsList] = askerEntry.friendsList + [targetHandle];
+    friendUpdate[UserKeys.friendsList] = targetEntry.friendsList + [askerHandle];
+  } else {
+    addedGroupId  = await createGroup(userHandles: [askerHandle, targetHandle]);
+  }
+  signedInUpdate[UserKeys.groupsList] = askerEntry.groupsList + [addedGroupId];
+
+  await BootsAuth.instance.signedInRef.updateData(signedInUpdate);
+  await targetSnap.reference.updateData(friendUpdate);
+}
 
 class SearchFriendBloc extends StatesRebuilder {
   List<DocumentSnapshot> results;
@@ -27,33 +48,8 @@ class SearchFriendBloc extends StatesRebuilder {
     return UserEntry.fromDocSnap(results[index]);
   }
 
-  Future<void> addFriend({int index}) async {
-
-    DocumentSnapshot friendSnap = this.results[index];
-    UserEntry friendEntry = UserEntry.fromDocSnap(friendSnap);
-    String friendHandle = friendEntry.handle;
-
-    UserEntry signedInEntry = BootsAuth.instance.signedInEntry;
-    String signedInHandle = signedInEntry.handle;
-
-    Map<String, dynamic> signedInUpdate = {
-      UserKeys.followingList: signedInEntry.followingList + [friendHandle]
-    };
-    Map<String, dynamic> friendUpdate = {};
-
-    String addedGroupId;
-    if (friendEntry.followingList.contains(signedInHandle)) {
-      DocumentSnapshot groupSnap = await findDMGroupFriend(friendHandle: friendHandle);
-      addedGroupId = groupSnap.documentID;
-      signedInUpdate[UserKeys.friendsList] = signedInEntry.friendsList + [friendHandle];
-      friendUpdate[UserKeys.friendsList] = friendEntry.friendsList + [signedInHandle];
-    } else {
-      addedGroupId  = await createGroup(userHandles: [signedInHandle, friendHandle]);
-    }
-    signedInUpdate[UserKeys.groupsList] = signedInEntry.groupsList + [addedGroupId];
-
-    await BootsAuth.instance.signedInRef.updateData(signedInUpdate);
-    await friendSnap.reference.updateData(friendUpdate);
+  Future<void> addFriendAt({int index}) async {
+    await addFriend(askerSnap: BootsAuth.instance.signedInSnap, targetSnap: this.results[index]);
   }
 }
 
@@ -116,7 +112,12 @@ class FriendsSearchDelegate extends SearchDelegate {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => ProfilePage(userEntry: userEntry)),
+                  MaterialPageRoute(builder: (context) => Scaffold(
+                    appBar: AppBar(
+                      automaticallyImplyLeading: true,
+                    ),
+                    body: ProfilePage(userEntry: userEntry),
+                  )),
                 );
               },
               child: ListTile(
@@ -131,7 +132,7 @@ class FriendsSearchDelegate extends SearchDelegate {
                 trailing: FlatButton(
                   child: Text('Follow'),
                   onPressed: () async {
-                    await this.bloc.addFriend(index: i);
+                    await this.bloc.addFriendAt(index: i);
                     this.close(context, null);
                   },
                 ),
