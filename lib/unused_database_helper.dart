@@ -3,7 +3,7 @@ import 'package:boots/common_imports.dart';
 
 enum DatabaseTable {
   posts,
-  old.friends,
+  friends,
 }
 String _enumToTable(DatabaseTable table_enum){
   switch (table_enum) {

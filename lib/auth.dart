@@ -6,37 +6,19 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 
-
-class BootsAuth {
-  static final BootsAuth instance = BootsAuth();
-  static final _firebaseAuth = FirebaseAuth.instance;
-
-
-
-}
-
-class UIDSharedPreferences {
-  SharedPreferences _sharedPreferences;
-  UIDSharedPreferences() {
-    SharedPreferences.getInstance().then((sp) {
-      _sharedPreferences = sp;
-    });
-  }
-
-  void UIDexists(){
-    if UIDexists
-  }
-
-}
-
-final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
-
 class CreateOrLoginBloc extends StatesRebuilder {
-  Future<bool> checkSavedLogin() async {
-    ///TODO: Fill out function
-    SharedPreferences sharedPreferences = await BootsAuth.getSharedPreferences();
 
+  String _signInUid;
+
+  Future<void> lookupSavedUid() async {
+    final prefs = await SharedPreferences.getInstance();
+    _signInUid = prefs.getString('SignInUid');
   }
+
+  Future<bool> isLoggedIn() async {
+    return _signInUid == null;
+  }
+
 
 }
 
@@ -44,7 +26,7 @@ class RegisterBloc {
 
 }
 
-class BootsAutsh {
+class BootsAuth {
 
 
   final googleLoginHandler = new GoogleSignIn.standard();
@@ -103,7 +85,6 @@ class BootsAutsh {
     } catch (e) {
       print('Google login exception $e');
     }
-
   }
 
   Future<String> emailLogin({String email, String password}) async {

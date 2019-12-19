@@ -5,8 +5,7 @@ import 'package:states_rebuilder/states_rebuilder.dart';
 import 'package:boots/loading_list.dart';
 import 'package:boots/posts/get_posts.dart';
 import 'package:boots/posts/add_post.dart';
-import 'package:boots/signin/login_page.dart';
-import 'package:boots/signin/register_page.dart';
+import 'package:boots/ui/primary_button.dart';
 import 'package:boots/profile/profile_page.dart';
 import 'package:boots/testing/setup_users.dart';
 
@@ -16,29 +15,41 @@ void main() async {
   runApp(BootsApp());
 }
 
+class DetectLoginBloc extends StatesRebuilder {
+  bool loggedInFunc(){
+    return false;
+  }
+}
+
 class BootsApp extends StatelessWidget {
 
   Widget build(BuildContext context) {
-    return MaterialApp(
-        home: BlocProvider(
-          bloc: CreateOrLoginBloc(),
-          child: AuthPage(),
-      )
+    return Injector(
+      inject: [Inject(()=>Counter())],
+      builder: (context) {
+        final counterModel = Injector.get<Counter>();
+      }
+        MaterialApp(
+          home: BlocProvider(
+          bloc: FirstBloc(),
+          child: CreateVLoginScreen(),
+        )
     );
   }
 }
 
-class CreateOrLoginPage extends StatelessWidget {
+
+class CreateVLoginScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    final bloc = BlocProvider.of<CreateOrLoginBloc>(context);
-    return StateBuilder(
-      blocs: [bloc],
-      builder: (_, __) {
-        
-      }
+    final bloc = BlocProvider<DetectLoginBloc>.of(context);
+
+    return Column(
+      children: [
+        PrimaryButton(""),
+        PrimaryButton(),
+      ]
     );
-    return null;
   }
 }
 
